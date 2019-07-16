@@ -7,3 +7,8 @@ A collection of scripts which allows auto-recovery of a non-botable Azure image.
 
 ## More detailed docu is comming soon
 
+### [ubuntu 12.04](#ubuntu-12.04)
+
+### ubuntu 12.04
+bla
+bla
