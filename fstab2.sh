@@ -5,5 +5,3 @@ cat /etc/fstab.copy | awk '/\/boot /{print}' >> /etc/fstab
 cat /etc/fstab
 exit
 EOF
-
-
