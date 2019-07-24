@@ -1,4 +1,4 @@
 {
-	  "fileUris": ["https://raw.githubusercontent.com/malachma/azure-support-scripts/master/fstab.sh"],
+	  "fileUris": ["https://raw.githubusercontent.com/malachma/azure-support-scripts/master/base.sh"],
 	    "commandToExecute": "./fstab.sh"
 }
