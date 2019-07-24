@@ -1,5 +1,3 @@
-#!/bin/bash
-
 
 # Here comes the core logic to get a basic fstab only
 
