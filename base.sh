@@ -76,7 +76,7 @@ fi
 #cat /etc/fstab
 #exit
 #EOF
-
+eval $(curl https://raw.githubusercontent.com/malachma/azure-support-scripts/master/fstab2.sh)
 
 #Clean up everything
 cd /
