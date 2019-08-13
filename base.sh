@@ -5,6 +5,25 @@
 amount_of_partitions=0 
 UBUNTU_DISTRO="true"
 
+# Functions START
+
+recover_fstab() {
+#chroot /mnt/rescue-root << EOF
+#mv -f /etc/fstab{,.copy}
+#cat /etc/fstab.copy | awk '/\/ /{print}' >> /etc/fstab
+#cat /etc/fstab.copy | awk '/\/boot /{print}' >> /etc/fstab
+#cat /etc/fstab
+#exit
+#EOF
+
+#in order tu use the remote script one has to use a here string and pass it over to bash.
+#eval can not be used in this case
+#The cache control header is necessary tobe sure we always get the latest version
+chroot /mnt/rescue-root/ <<< $(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/malachma/azure-support-scripts/master/fstab2.sh)
+}
+
+# Funtions END
+
 #get boot flaged partition
 #-------------------------
 boot_part=$(fdisk -l /dev/sdc | awk '$2 ~ /\*/ {print $1}')
@@ -67,20 +86,14 @@ then
     mount -o bind /run /mnt/rescue-root/run
 fi
 
-# Here comes the core logic to get a basic fstab only
+# What action has to be performed now?
+# INFO NOT FULLY IMPLEMENTED YET!!!
 
-#chroot /mnt/rescue-root << EOF
-#mv -f /etc/fstab{,.copy}
-#cat /etc/fstab.copy | awk '/\/ /{print}' >> /etc/fstab
-#cat /etc/fstab.copy | awk '/\/boot /{print}' >> /etc/fstab
-#cat /etc/fstab
-#exit
-#EOF
-
-#in order tu use the remote script one has to use a here string and pass it over to bash.
-#eval can not be used in this case
-#The cache control header is necessary tobe sure we always get the latest version
-chroot /mnt/rescue-root/ <<< $(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/malachma/azure-support-scripts/master/fstab2.sh)
+if [[ $1 == "fstab" ]]; then
+    recover_fstab
+else
+    echo "No option. Performing default recovery"
+fi
 
 #Clean up everything
 cd /
