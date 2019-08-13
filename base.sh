@@ -76,7 +76,11 @@ fi
 #cat /etc/fstab
 #exit
 #EOF
-eval $(curl https://raw.githubusercontent.com/malachma/azure-support-scripts/master/fstab2.sh)
+
+#in order tu use the remote script one has to use a here string and pass it over to bash.
+#eval can not be used in this case
+#The cache control header is necessary tobe sure we always get the latest version
+chroot /mnt/rescue-root/ <<< $(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/malachma/azure-support-scripts/master/fstab2.sh)
 
 #Clean up everything
 cd /
