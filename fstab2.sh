@@ -5,7 +5,7 @@
 #Each line has also to end with a semicolon to be formating agnostic
 
 mv -f /etc/fstab{,.copy};
-cat /etc/fstab.copy | awk '/\w+\s+\/\s+\w+/ {print}' >> /etc/fstab;
-cat /etc/fstab.copy | awk '/\w+\s+\/boot\s+\w+/ {print}' >> /etc/fstab;
+cat /etc/fstab.copy | awk '/[[:space:]]+\/[[:space:]]+/ {print}' >> /etc/fstab;
+cat /etc/fstab.copy | awk '/[[:space:]]+\/boot[[:space:]]+/ {print}' >> /etc/fstab;
 cat /etc/fstab;
 exit;
