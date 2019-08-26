@@ -12,19 +12,8 @@ actions="fstab initrd kernel" # These are the basic actions at the moment
 
 # Functions START
 
-recover_fstab() {
-#chroot /mnt/rescue-root << EOF
-#mv -f /etc/fstab{,.copy}
-#cat /etc/fstab.copy | awk '/\/ /{print}' >> /etc/fstab
-#cat /etc/fstab.copy | awk '/\/boot /{print}' >> /etc/fstab
-#cat /etc/fstab
-#exit
-#EOF
-
-#in order tu use the remote script one has to use a here string and pass it over to bash.
-#eval can not be used in this case
-#The cache control header is necessary tobe sure we always get the latest version
-chroot /mnt/rescue-root/ <<< $(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/malachma/azure-support-scripts/master/fstab2.sh)
+recover_action() {
+chroot /mnt/rescue-root/ <<< $(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/malachma/azure-support-scripts/master/$1)
 }
 
 isInAction() { 
@@ -33,17 +22,6 @@ isInAction() {
     return $?
 }
 
-###########
-#test_actions="initrd fstab bla kernel"
-#mla@DE-MALACHMA03:~$ unset new_actions
-#mla@DE-MALACHMA03:~$ for i in $test_actions; do
-#> if isInAction $i; then
-#> new_actions="$new_actions $i"
-#> fi
-#> done
-#mla@DE-MALACHMA03:~$ echo $new_actions
-#initrd fstab kernel
-##########
 
 # Funtions END
 
@@ -100,19 +78,6 @@ else if [[ $isUbuntu == "true" ]]; then
 fi
 fi
 
-# Determine what distro we have to recover
-#if [[ $amount_of_partitions -gt 1 ]]; 
-#then
-    # This is a RedHat based OS-Disk
- #   UBUNTU_DISTRO="false"
-
-#else
- #   # This is an Ubuntu/Debian based OS-Disk
-    # only one partion exists
-  #  rescue_root=$boot_part
-   # UBUNTU_DISTRO="true"
-#fi
-
 if [[ $(lsblk -fl | grep -E "^${rescue_root##*/}" | cut -d' ' -f2) == "ext4" ]]; then
     is_ext4="true"
 fi
@@ -123,21 +88,23 @@ fi
 #Mount the root part
 #====================
 mkdir /mnt/rescue-root
-if [[ $UBUNTU_DISTRO == "false" ]];
+if [[ $isRedHat == "true" ]];
 then
     # noouid is valid for XFS only
-    if [[ $is_ext4 ]]; then
-        mount $rescue_root /mnt/rescue-root
+    if [[ $is_ext4 == "true" ]]; then
+        mount -n $rescue_root /mnt/rescue-root
+    else
+        mount -n -o nouuid $rescue_root /mnt/rescue-root
     fi
-    mount -o nouuid $rescue_root /mnt/rescue-root
-else
-    mount $rescue_root /mnt/rescue-root
+fi
+
+if [[ $isUbuntu == "true" ]]; then
+    mount -n $rescue_root /mnt/rescue-root
 fi
 
 #Mount the boot part
 #===================
-if [[ $UBUNTU_DISTRO == "false" ]];
-then
+if [[ $isRedHat == "true" ]]; then
     mount -o nouuid $boot_part /mnt/rescue-root/boot
 fi
 
@@ -148,37 +115,36 @@ fi
 #see also http://linuxonazure.azurewebsites.net/linux-recovery-using-chroot-steps-to-recover-vms-that-are-not-accessible/
 
 for i in dev proc sys dev/pts; do mount -o bind /$i /mnt/rescue-root/$i; done
-if [[ $UBUNTU_DISTRO == "true" ]];
+if [[ $isUbuntu == "true" ]];
 then
     mount -o bind /run /mnt/rescue-root/run
 fi
 
 # What action has to be performed now?
 # INFO NOT FULLY IMPLEMENTED YET!!!
-for key in .... 
-case $key in 
-    fstab) 
-        echo "fstab action";
-     ;;
-     initrd)
-        echo "initrd action"; 
-     ;; 
-     kernel) 
-        echo "kernel action"; 
-     ;; 
-esac
-
-if [[ $1 == "fstab" ]]; then
-    recover_fstab
-else
-    echo "No option. Performing default recovery"
+for k in $1; do 
+if [[ $(isInAction $k) -eq 0 ]]; then
+    case $k in 
+        fstab) 
+            echo "We have fstab as option"
+            recover_action "fstab2.sh"
+            ;; 
+        kernel)
+            echo "We have kernel as option"
+            ;;
+        initrd)
+            echo "We have initrd as option";
+            ;; 
+    esac
 fi
+done
+
 
 #Clean up everything
 cd /
 for i in dev/pts proc sys dev; do umount  /mnt/rescue-root/$i; done
 
-if [[ $UBUNTU_DISTRO == "true" ]];
+if [[ $isUbuntu == "true" ]];
 then
     umount /mnt/rescue-root/run
 fi
