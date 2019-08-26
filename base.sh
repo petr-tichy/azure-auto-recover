@@ -127,7 +127,7 @@ if [[ $(isInAction $k) -eq 0 ]]; then
     case $k in 
         fstab) 
             echo "We have fstab as option"
-            recover_action "fstab2.sh"
+            recover_action "fstab.sh"
             ;; 
         kernel)
             echo "We have kernel as option"
