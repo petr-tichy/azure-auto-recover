@@ -21,7 +21,7 @@ fi
 # the variables are defined in base.sh
 if [[ $isRedHat == "true" ]]; then
         if [[ $isRedHat6 == "true" ]]; then
-                chroot /mnt/rescue-root sed 's/default=0/default=1/' /boot/grub/grub.conf
+                chroot /mnt/rescue-root sed -i 's/default=0/default=1/' /boot/grub/grub.conf
         else
                 chroot /mnt/rescue-root grub2-set-default 2 # This is the last previous kernel
                 chroot /mnt/rescue-root grub-mkconfig -o /boot/grub2/grub.cfg
