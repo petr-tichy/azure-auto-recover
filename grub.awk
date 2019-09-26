@@ -10,6 +10,7 @@
 
 BEGIN {
     i=0
+    kernel_version=""
 }
 $0 ~ /kernel|initrd/ && $0 !~ /^#|.*#/{
     grub_directive[i]=$1
@@ -27,12 +28,6 @@ function substr_c2(_i) {
 	return substr(directive_value[_i],index(directive_value[_i],"-")+1)
 }
  
-#
-# Recreate the initrd image
-#
-function recreateInitRd() {
-	return "dracut -f /boot/initramfs-" substr_c2(k-1) ".img" substr_c2(k-1)
-}
 
 #
 # Find out whether the grub directive follow the right order or whether we have one missing (initrd)
@@ -45,7 +40,7 @@ function directiveMissing() {
         	if ( grub_directive[k] == grub_directive[k+1] ) {
 			sed_modify="sed -e '" indexLine[k] "ainitrd /initramfs-" substr_c2(k) ".img'  /boot/grub/grub.conf"
 			system(sed_modify)
-			recreateInitRd()
+			kernel_version = substr_c2(k)
         	}
 		j++
     		}
@@ -63,7 +58,7 @@ function directiveValueMissing() {
         	if ( length(directive_value[k]) == 0 ) {
 			sed_modify="sed -e '" indexLine[k] "c\tinitrd /initramfs-" substr_c2(k-1) ".img'  /boot/grub/grub.conf"
 			system(sed_modify)
-			recreateInitRd()
+			kernel_version = substr_c2(k-1)
         	}
     	}
 }
@@ -73,4 +68,5 @@ END {
 
 	directiveMissing()	
 	directiveValueMissing()
+	dracut -f "/boot/initramfs-"  kernel_version ".img" kernel_version
 }
