@@ -68,5 +68,6 @@ END {
 
 	directiveMissing()	
 	directiveValueMissing()
-	dracut -f "/boot/initramfs-"  kernel_version ".img" kernel_version
+	img_str="dracut -f /boot/initramfs-" substr_c2(0) ".img " substr_c2(0)
+        system(img_str)
 }
