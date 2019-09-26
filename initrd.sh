@@ -20,7 +20,7 @@ recover_ubuntu() {
 #
 recover_redhat() {
     if [[ $isRedHat6 == "true" ]]; then
-    mmmm
+        awk -f grub.awk 
     else
         mkinitrd --force /boot/initramfs-$(ls -t /lib/modules | head -1).img $(ls -t /lib/modules | head -1)
         grub2-mkconfig  -o /boot/grub2/grub.cfg
