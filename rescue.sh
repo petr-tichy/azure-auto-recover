@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Author : Marcus Lachmanez (malachma@microsoft.com, Azure Linux Escalation Team), Sriharsha B S (sribs@microsoft.com, Azure Linux Escalation Team),  Dinesh Kumar Baskar (dibaskar@microsoft.com, Azure Linux Escalation Team)
-# This is a fork from: https://github.com/sribs/azure-support-scripts
-
 
 # What is the Distro type?
 DISTRO_NAME=$(cat /etc/os-release | awk "/^NAME/" | sed -e 's/NAME=//')
@@ -299,7 +296,7 @@ create_rescue_vm
 # INFO RECOVERY OPTIONS ARE NOT FULLY IMPLEMENTED YET
 #
 echo "Start recovery operation/s"
-az vm extension set --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings  build_json_string "1"
+#az vm extension set --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings  build_json_string "1"
 echo "Recovery finished"
 read -p "Press Enter to continue"
 read -p "Please press Enter again if you would like to end"
