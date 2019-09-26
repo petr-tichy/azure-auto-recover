@@ -10,7 +10,9 @@ set_grub_default() {
 }
 
 # at first alter the grub configuration to set GRUB_DEFAULT=saved if needed
-set_grub_default
+if [[ $isRedHat6 == "false" ]]; then
+        set_grub_default
+fi
 
 # set the default kernel accordingly
 # This is different for RedHat and Ubuntu/SUSE distros
@@ -18,8 +20,12 @@ set_grub_default
 
 # the variables are defined in base.sh
 if [[ $isRedHat == "true" ]]; then
-       chroot /mnt/rescue-root grub2-set-default 2 # This is the last previous kernel
-       chroot /mnt/rescue-root grub-mkconfig -o /boot/grub2/grub.cfg
+        if [[ $isRedHat6 == "true" ]]; then
+                chroot /mnt/rescue-root sed 's/default=0/default=1/' /boot/grub/grub.conf
+        else
+                chroot /mnt/rescue-root grub2-set-default 2 # This is the last previous kernel
+                chroot /mnt/rescue-root grub-mkconfig -o /boot/grub2/grub.cfg
+        fi
 fi 
 
 if [[ $isUbuntu == "true" ]]; then
@@ -35,6 +41,6 @@ fi
 
 
 
-# SIEHE AUCH HIER --> https://www.linuxsecrets.com/2815-grub2-submenu-change-boot-order
+# For reference --> https://www.linuxsecrets.com/2815-grub2-submenu-change-boot-order
 
 
