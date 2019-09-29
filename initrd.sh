@@ -5,7 +5,7 @@
 #
 
 recover_suse() {
-
+    true
 }
 
 recover_ubuntu() {
