@@ -20,7 +20,8 @@ recover_ubuntu() {
 #
 recover_redhat() {
     if [[ $isRedHat6 == "true" ]]; then
-        (cd $tmp_dir; wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-support-scripts/master/grub.awk)
+        cd $tmp_dir 
+        wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-support-scripts/master/grub.awk
         awk -f grub.awk 
     else
         mkinitrd --force /boot/initramfs-$(ls -t /lib/modules | head -1).img $(ls -t /lib/modules | head -1)
