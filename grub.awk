@@ -68,6 +68,8 @@ END {
 
 	directiveMissing()	
 	directiveValueMissing()
+	print "Starting recreate of initramfs"
 	img_str="dracut -f /boot/initramfs-" substr_c2(0) ".img " substr_c2(0)
+	print "Recreate of initramfsi finished
         system(img_str)
 }
