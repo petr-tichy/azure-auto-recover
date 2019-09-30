@@ -2,16 +2,16 @@
 
 
 # Variables
-amount_of_partitions=0 
-UBUNTU_DISTRO="true"
+export amount_of_partition=0 
+export UBUNTU_DISTRO="true"
 export isRedHat="false"
 export isRedHat6="false"
 export isSuse="false"
 export isUbuntu="false"
-tmp_dir=""
-recover_action=""
+export tmp_dir=""
+export recover_action=""
 
-actions="fstab initrd kernel" # These are the basic actions at the moment
+ export actions="fstab initrd kernel" # These are the basic actions at the moment
 
 
 
@@ -19,6 +19,7 @@ actions="fstab initrd kernel" # These are the basic actions at the moment
 
 # Create tmp dir in order to store our files we download
 tmp_dir=$(mktemp -d)
+tmp_dir
 
 recover_action() {
     cd $tmp_dir
