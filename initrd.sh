@@ -5,7 +5,8 @@
 #
 
 recover_suse() {
-    true
+    mkinitrd --force /boot/initramfs-$(ls -t /lib/modules | head -1).img $(ls -t /lib/modules | head -1)
+    grub2-mkconfig  -o /boot/grub2/grub.cfg
 }
 
 recover_ubuntu() {
@@ -22,9 +23,6 @@ recover_redhat() {
     if [[ $isRedHat6 == "true" ]]; then
         cd $tmp_dir 
         wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-support-scripts/master/grub.awk
-        pwd
-        ls -l
-        ls -R /boot
         awk -f grub.awk /boot/grub/grub.conf
     else
         mkinitrd --force /boot/initramfs-$(ls -t /lib/modules | head -1).img $(ls -t /lib/modules | head -1)
