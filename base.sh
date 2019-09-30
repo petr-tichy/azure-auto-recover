@@ -19,7 +19,6 @@ export recover_action=""
 
 # Create tmp dir in order to store our files we download
 tmp_dir=$(mktemp -d)
-tmp_dir
 
 recover_action() {
     cd $tmp_dir
