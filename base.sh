@@ -85,39 +85,34 @@ esac
 
 
 
-#get boot flaged partition
-#-------------------------
-#boot_part=$(fdisk -l /dev/sdc | awk '$2 ~ /\*/ {print $1}')
-boot_part=$(fdisk -l $(readlink -f /dev/disk/azure/scsi1/lun0 | grep -v -E "[0-9]+") | awk  '$2 ~ /\*/ {print $1}')
-
-#get partitions of the data-disk (the OS-disk to be recovered)
-#---------------------
-#partitions=$(fdisk -l /dev/sdc | awk '/^\/dev\/sdc/ {print $1}')
-partitions=$(ls $(readlink -f /dev/disk/azure/scsi1/lun0)* | grep -E "[0-9]+")
-
-for i in $partitions; do 
-    ((amount_of_partitions++));
-done
-
+#
+# Identify the corret boot and root partitions
+#
+if [[ $isSuse == "true" ]]; then
+    # This works well for SLES 12sp4
+    boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxboot | cut -d ' ' -f2)
+    rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxroot | cut -d ' ' -f2)
+fi
 
 if [[ $isRedHat == "true" ]]; then
+    boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)
+    partitions=$(ls /dev/disk/azure/scsi1/* |  grep -E "part[0-9]$")
     rescue_root=$(echo $partitions | sed "s|$boot_part||g")
-else if [[ $isUbuntu == "true" ]]; then
-    rescue_root=$boot_part
-fi
 fi
 
-if [[ $(lsblk -fl | grep -E "^${rescue_root##*/}" | cut -d' ' -f2) == "ext4" ]]; then
+if [[ $isUbuntu == "true" ]]; then
+    rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)
+fi
+
+if [[ $(lsblk -fn $rescue_root | cut -d' ' -f2) == "ext4" ]]; then
     is_ext4="true"
 fi
 
-#is_ext4=$(lsblk -fl | awk '$1 ~/^sdc[0-9]/ && $2 == "ext4" {print "true"}')
-#is_ext4=$(echo $is_ext4 | cut -d ' ' -f1)
 
 #Mount the root part
 #====================
 mkdir /mnt/rescue-root
-if [[ $isRedHat == "true" ]]; then
+if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     # noouid is valid for XFS only
     if [[ $is_ext4 == "true" ]]; then
         mount -n $rescue_root /mnt/rescue-root
@@ -132,7 +127,7 @@ fi
 
 #Mount the boot part
 #===================
-if [[ $isRedHat == "true" ]]; then
+if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     # noouid is valid for XFS only
     if [[ $is_ext4 == "true" ]]; then
         mount $boot_part /mnt/rescue-root/boot
@@ -140,7 +135,6 @@ if [[ $isRedHat == "true" ]]; then
         mount -o nouuid $boot_part /mnt/rescue-root/boot
     fi
 fi
-
 
 
 #Mount the support filesystems
