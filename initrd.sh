@@ -5,7 +5,7 @@
 #
 
 recover_suse() {
-    mkinitrd --force /boot/initramfs-$(ls -t /lib/modules | head -1).img $(ls -t /lib/modules | head -1)
+    mkinitrd /boot/initrd-$(ls -t /lib/modules | head -1) $(ls -t /lib/modules | head -1)
     grub2-mkconfig  -o /boot/grub2/grub.cfg
 }
 
