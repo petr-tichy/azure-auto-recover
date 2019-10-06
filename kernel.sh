@@ -6,7 +6,7 @@
 # Set the default boot menu entry for GRUB.  This requires setting GRUB_DEFAULT=saved in /etc/default/grub
 set_grub_default() {
     # if not set to saved, replace it
-    chroot /mnt/rescue-root sed -i "s/GRUB_DEFAULT=[[:digit:]]/GRUB_DEFAULT=saved/" /etc/default/grub
+    sed -i "s/GRUB_DEFAULT=[[:digit:]]/GRUB_DEFAULT=saved/" /etc/default/grub
 }
 
 # at first alter the grub configuration to set GRUB_DEFAULT=saved if needed
