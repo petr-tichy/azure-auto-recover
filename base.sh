@@ -165,7 +165,7 @@ if [[ $(isInAction $k) -eq 0 ]]; then
             recover_action $k
             ;;
         initrd)
-            echo "We have initrd as option";
+            echo "We have initrd as option"
             recover_action $k
             ;; 
     esac
