@@ -10,7 +10,7 @@ set_grub_default() {
 }
 
 # at first alter the grub configuration to set GRUB_DEFAULT=saved if needed
-if [[ $isRedHat6 == "false" && $isRedHat="true"]]; then
+if [[ $isRedHat6 == "false" ]]; then
         set_grub_default
 fi
 
