@@ -29,13 +29,13 @@ if [[ $isRedHat == "true" ]]; then
 fi 
 
 if [[ $isUbuntu == "true" ]]; then
-        chroot /mnt/rescue-root grub-set-default "1>2"
-        chroot /mnt/rescue-root update-grub
+        grub-set-default "1>2"
+        update-grub
 fi
 
 if [[  $isSuse == "true" ]]; then
-        chroot /mnt/rescue-root grub2-set-default "1>2"
-        chroot /mnt/rescue-root grub2-mkconfig -o /boot/grub2/grub.cfg
+        grub2-set-default "1>2"
+        grub2-mkconfig -o /boot/grub2/grub.cfg
 fi
 
 
