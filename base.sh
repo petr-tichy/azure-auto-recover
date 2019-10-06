@@ -10,8 +10,8 @@ export isSuse="false"
 export isUbuntu="false"
 export tmp_dir=""
 export recover_action=""
-export $boot_part
-export $rescue_root
+export boot_part=""
+export rescue_root=""
 
  export actions="fstab initrd kernel" # These are the basic actions at the moment
 
