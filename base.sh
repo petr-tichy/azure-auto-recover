@@ -38,7 +38,7 @@ recover_action() {
     wget -q --no-cache -O $recover_action   https://raw.githubusercontent.com/malachma/azure-support-scripts/master/${recover_action}.sh
     if [[ -f $tmp_dir/$recover_action  ]]; then
         chmod 700 $tmp_dir/$recover_action
-        chroot /mnt/rescue-root/ $tmp_dir/$recover_action
+        chroot /mnt/rescue-root $tmp_dir/$recover_action
     else
         logger -s "File ${recover_action}.sh could not be fetched. Exiting"
         exit 1
