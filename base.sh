@@ -12,6 +12,7 @@ export tmp_dir=""
 export recover_action=""
 export boot_part=""
 export rescue_root=""
+export isExt4="false"
 
  export actions="fstab initrd kernel" # These are the basic actions at the moment
 
@@ -96,13 +97,13 @@ if [[ $isSuse == "true" ]]; then
     #rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxroot | cut -d ' ' -f2)
     boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | awk '/boot/ {print $1}')
     partitions=$(ls /dev/disk/azure/scsi1/* |  grep -E "part[0-9]$")
-    rescue_root=$(echo $partitions | sed "s|$boot_part||g")
+    rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
 fi
 
 if [[ $isRedHat == "true" ]]; then
     boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)
     partitions=$(ls /dev/disk/azure/scsi1/* |  grep -E "part[0-9]$")
-    rescue_root=$(echo $partitions | sed "s|$boot_part||g")
+    rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
 fi
 
 if [[ $isUbuntu == "true" ]]; then
@@ -110,7 +111,7 @@ if [[ $isUbuntu == "true" ]]; then
 fi
 
 if [[ $(lsblk -fn $rescue_root | cut -d' ' -f2) == "ext4" ]]; then
-    is_ext4="true"
+    isExt4="true"
 fi
 
 
@@ -119,7 +120,7 @@ fi
 mkdir /mnt/rescue-root
 if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     # noouid is valid for XFS only
-    if [[ $is_ext4 == "true" ]]; then
+    if [[ $isExt4 == "true" ]]; then
         mount -n $rescue_root /mnt/rescue-root
     else
         mount -n -o nouuid $rescue_root /mnt/rescue-root
@@ -134,7 +135,7 @@ fi
 #===================
 if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     # noouid is valid for XFS only
-    if [[ $is_ext4 == "true" ]]; then
+    if [[ $isExt4 == "true" ]]; then
         mount $boot_part /mnt/rescue-root/boot
     else
         mount -o nouuid $boot_part /mnt/rescue-root/boot
