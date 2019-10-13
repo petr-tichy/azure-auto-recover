@@ -14,7 +14,7 @@ export boot_part=""
 export rescue_root=""
 export isExt4="false"
 
- export actions="fstab initrd kernel" # These are the basic actions at the moment
+export actions="fstab initrd kernel" # These are the basic actions at the moment
 
 
 
@@ -101,11 +101,13 @@ if [[ $isSuse == "true" ]]; then
 fi
 
 if [[ $isRedHat == "true" ]]; then
-    boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)
-    partitions=$(ls /dev/disk/azure/scsi1/* |  grep -E "part[0-9]$")
+    # parted can not be used on RedHat 7.x there is a problemn that even a read opeartion causes the devices not ot exist anymore
+    #boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)                                                                                                                                                                                           
+
+    boot_part=$(fdisk -l $(readlink -f /dev/disk/azure/scsi1/lun0) | awk '/^\/dev.*\*/ {print $1}')  
+    partitions=$(ls $(readlink -f /dev/disk/azure/scsi1/*) | grep -e "[0-9]$")                 
     rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
 fi
-
 if [[ $isUbuntu == "true" ]]; then
     rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)
 fi
