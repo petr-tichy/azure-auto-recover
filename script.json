@@ -1,4 +1,0 @@
-{
-	  "fileUris": ["https://raw.githubusercontent.com/malachma/azure-support-scripts/master/base.sh"],
-	    "commandToExecute": "./base.sh"
-}
