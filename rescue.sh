@@ -301,8 +301,7 @@ create_rescue_vm
 # INFO RECOVERY OPTIONS ARE NOT FULLY IMPLEMENTED YET
 #
 echo "Start recovery operation/s"
-ac_test=$(build_json_string $action)
-az vm extension set --verbose --debug --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings  $ac_test
+az vm extension set --verbose --debug --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings $(build_json_string $action)
 echo "Recovery finished"
 read -p "Press Enter to continue"
 read -p "Please press Enter again if you would like to end"
