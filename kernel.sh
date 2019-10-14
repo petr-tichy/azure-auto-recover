@@ -38,9 +38,8 @@ if [[  $isSuse == "true" ]]; then
         grub2-mkconfig -o /boot/grub2/grub.cfg
 fi
 
-
-
-
 # For reference --> https://www.linuxsecrets.com/2815-grub2-submenu-change-boot-order
+
+exit 0
 
 
