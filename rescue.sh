@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Author : Marcus Lachmanez (malachma@microsoft.com Azure Linux Escalation Team)
+# Date : June 2019
+
+# Author : Sriharsha B S (sribs@microsoft.com, Azure Linux Escalation Team),  Dinesh Kumar Baskar (dibaskar@microsoft.com, Azure Linux Escalation Team)
+# Date : 13th August 2018
+# Description : BASH form of New-AzureRMRescueVM powershell command.
 
 # What is the Distro type?
 DISTRO_NAME=$(cat /etc/os-release | awk "/^NAME/" | sed -e 's/NAME=//')
