@@ -283,7 +283,7 @@ start_fixedvm () {
 
 build_json_string () {
   # option $1 contains the additional function we would like to execute  
-  printf "'%s'" "{'fileUris': ['https://raw.githubusercontent.com/malachma/azure-support-scripts/master/base.sh'], 'commandToExecute': './base.sh $1'}"
+  printf "'%s'" "{\"fileUris\": [\"https://raw.githubusercontent.com/malachma/azure-support-scripts/master/base.sh\"], \"commandToExecute\": \"./base.sh $1\"}"
 }
 
 # End of function definition
@@ -301,7 +301,8 @@ create_rescue_vm
 # INFO RECOVERY OPTIONS ARE NOT FULLY IMPLEMENTED YET
 #
 echo "Start recovery operation/s"
-az vm extension set --verbose --debug --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings $(build_json_string $action)
+# eval is needed to get the expansion correct
+eval az vm extension set --verbose --debug --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings $(build_json_string $action)
 echo "Recovery finished"
 read -p "Press Enter to continue"
 read -p "Please press Enter again if you would like to end"
