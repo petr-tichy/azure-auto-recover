@@ -68,7 +68,7 @@ Usage Example: ./rescue.sh --recue-vm-name rescue1 -g debian -n debian9 -s  xxxx
 "
 
 POSITIONAL=()
-if [[ $# -ne 12 ]]
+if [[ $# -ne 14 ]]
 then
     echo -e $help
     exit;
@@ -105,6 +105,11 @@ case $key in
     ;;
     -p|--password)
     password="$2"
+    shift # past argument
+    shift
+    ;;
+    --action)
+    action="$2"
     shift # past argument
     shift
     ;;
@@ -278,7 +283,7 @@ start_fixedvm () {
 
 build_json_string () {
   # option $1 contains the additional function we would like to execute  
-  echo {"fileUris": ["https://raw.githubusercontent.com/malachma/azure-support-scripts/master/base.sh"],"commandToExecute": "./base.sh $1"}
+  printf "'%s'" "{'fileUris': ['https://raw.githubusercontent.com/malachma/azure-support-scripts/master/base.sh'], 'commandToExecute': './base.sh $1'}"
 }
 
 # End of function definition
@@ -296,7 +301,8 @@ create_rescue_vm
 # INFO RECOVERY OPTIONS ARE NOT FULLY IMPLEMENTED YET
 #
 echo "Start recovery operation/s"
-#az vm extension set --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings  build_json_string "1"
+ac_test=$(build_json_string $action)
+az vm extension set --verbose --debug --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings  $ac_test
 echo "Recovery finished"
 read -p "Press Enter to continue"
 read -p "Please press Enter again if you would like to end"

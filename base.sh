@@ -155,8 +155,10 @@ then
     mount -o bind /run /mnt/rescue-root/run
 fi
 
+# Reformat the action value
+action_value=$(echo $1 | tr ',' ' ')
 # What action has to be performed now?
-for k in $1; do 
+for k in $action_value; do 
 if [[ $(isInAction $k) -eq 0 ]]; then
     case ${k,,} in 
         fstab) 
