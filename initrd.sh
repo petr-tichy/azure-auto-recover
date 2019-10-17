@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 #
 # recover logic for handling and initrd or kernel problem

@@ -1,3 +1,4 @@
+#!/bin/bash
 # The main intention is to roll back to the previous working kernel
 # We do this by altering the grub configuration
 
