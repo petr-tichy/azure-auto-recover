@@ -92,12 +92,17 @@ esac
 # Identify the corret boot and root partitions
 #
 if [[ $isSuse == "true" ]]; then
+    suse_version=$(grep VERSION_ID /etc/os-release)
+    suse_version=$(tr -d \" <<< ${suse_version##*=})
+    if [[ $suse_version == "12.4" ]]; then 
     # This works well for SLES 12sp4 but not for SP3 THIS IS A BUG!!!! couldbe also a problem of the GPT which is not supported got managed OS disks
-    #boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxboot | cut -d ' ' -f2)
-    #rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxroot | cut -d ' ' -f2)
-    boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | awk '/boot/ {print $1}')
-    partitions=$(ls /dev/disk/azure/scsi1/* |  grep -E "part[0-9]$")
-    rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
+        boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxboot | cut -d ' ' -f2)
+        rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxroot | cut -d ' ' -f2)
+    else
+        boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | awk '/boot/ {print $1}')
+        partitions=$(ls /dev/disk/azure/scsi1/* |  grep -E "part[0-9]$")
+        rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
+    fi
 fi
 
 if [[ $isRedHat == "true" ]]; then
