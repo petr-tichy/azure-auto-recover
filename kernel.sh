@@ -8,6 +8,9 @@
 set_grub_default() {
     # if not set to saved, replace it
     sed -i "s/GRUB_DEFAULT=[[:digit:]]/GRUB_DEFAULT=saved/" /etc/default/grub
+ #   GRUB_DISABLE_OS_PROBER=true
+#GRUB_DEFAULT=saved
+#GRUB_SAVEDEFAULT=true
 }
 
 # at first alter the grub configuration to set GRUB_DEFAULT=saved if needed
@@ -30,7 +33,7 @@ if [[ $isRedHat == "true" ]]; then
 fi 
 
 if [[ $isUbuntu == "true" ]]; then
-        grub-set-default "1>2"
+        sed -ei 's/GRUB_DEFAULT=.*/GRUB_DEFAULT="1>2"/' /etc/default/grub
         update-grub
 fi
 
