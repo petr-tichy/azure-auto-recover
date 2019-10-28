@@ -141,12 +141,15 @@ fi
 
 #Mount the boot part
 #===================
+if [[ ! -d /mnt/rescue-root/boot ]]; then
+        mkdir /mnt/rescue-root/boot
+fi
+
 if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     # noouid is valid for XFS only
     if [[ $isExt4 == "true" ]]; then
         mount $boot_part /mnt/rescue-root/boot
-    else
-        mount -o nouuid $boot_part /mnt/rescue-root/boot
+    else                                                                                                                                                            mount -o nouuid $boot_part /mnt/rescue-root/boot
     fi
 fi
 
@@ -154,8 +157,13 @@ fi
 #Mount the support filesystems
 #==============================
 #see also http://linuxonazure.azurewebsites.net/linux-recovery-using-chroot-steps-to-recover-vms-that-are-not-accessible/
+for i in dev proc sys tmp dev/pts; do
+        if [[ ! -d /mnt/rescue-root/$i ]]; then
+                mkdir /mnt/rescue-root/$i
+        fi
+        mount -o bind /$i /mnt/rescue-root/$i;
+done
 
-for i in dev proc sys tmp dev/pts; do mount -o bind /$i /mnt/rescue-root/$i; done
 if [[ $isUbuntu == "true" ]];
 then
     mount -o bind /run /mnt/rescue-root/run
