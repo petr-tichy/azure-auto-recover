@@ -164,9 +164,11 @@ for i in dev proc sys tmp dev/pts; do
         mount -o bind /$i /mnt/rescue-root/$i;
 done
 
-if [[ $isUbuntu == "true" ]];
-then
-    mount -o bind /run /mnt/rescue-root/run
+if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
+        if [[ ! -d /mnt/rescue-root/run ]]; then                                                                                                                            mkdir /mnt/rescue-root/run
+            mkdir /mnt/rescue-root/run
+        fi
+        mount -o bind /run /mnt/rescue-root/run
 fi
 
 # Reformat the action value
@@ -196,7 +198,7 @@ done
 cd /
 for i in dev/pts proc tmp sys dev; do umount  /mnt/rescue-root/$i; done
 
-if [[ $isUbuntu == "true" ]];
+if [[ $isUbuntu == "true"  || $isSuse == "true" ]];
 then
     umount /mnt/rescue-root/run
 fi
