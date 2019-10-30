@@ -1,4 +1,4 @@
-# Azure Linux non-boot recovery
+# Azure Linux auto recover
 
 A collection of scripts which allows auto-recovery of a non-botable Azure image. It should cover the following scenarious
 + fstab issues
