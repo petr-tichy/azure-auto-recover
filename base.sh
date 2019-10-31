@@ -114,8 +114,7 @@ if [[ $isRedHat == "true" ]]; then
     rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
 fi
 if [[ $isUbuntu == "true" ]]; then
-    rescue_root=$(fdisk -l $(readlink -f /dev/disk/azure/scsi1/lun0) | awk '/^\/dev.*\*/ {print $1}')  
-    #rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)
+    rescue_root=$(fdisk -l $(readlink -f /dev/disk/azure/scsi1/lun0) | awk '/^\/dev\/sd.1 / {print $1}')  
 fi
 
 if [[ $(lsblk -fn $rescue_root | cut -d' ' -f2) == "ext4" ]]; then
