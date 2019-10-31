@@ -307,8 +307,6 @@ create_rescue_vm
 # INFO RECOVERY OPTIONS ARE NOT FULLY IMPLEMENTED YET
 #
 echo "Start recovery operation/s"
-read -p "Please press Enter "
-read -p "Please press Enter "
 # eval is needed to get the expansion correct
 eval az vm extension set --resource-group $g   --vm-name $rn --name customScript   --publisher Microsoft.Azure.Extensions  --protected-settings $(build_json_string $action)
 echo "Recovery finished"
