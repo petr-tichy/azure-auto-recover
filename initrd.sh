@@ -10,7 +10,6 @@ recover_suse() {
 }
 
 recover_ubuntu() {
-     # update-initramfs: Generating /boot/initrd.img-4.15.0-1055-azure
      update-initramfs -k $(ls -t /lib/modules | head -1) -c
      update-grub
 
