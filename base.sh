@@ -201,7 +201,11 @@ if [[ $isUbuntu == "true"  || $isSuse == "true" ]];
 then
     umount /mnt/rescue-root/run
 fi
-umount /mnt/rescue-root/boot #may throw an erro on Ubuntu, but can be ignored
+
+if [[ ! $isUbuntu ]]; then
+    umount /mnt/rescue-root/boot #may throw an erro on Ubuntu, but can be ignored
+fi
+
 umount /mnt/rescue-root                                                                                                                                                                              
 rm -fr /mnt/rescue-root
 rm -fr $tmp_dir/$FSTAB
