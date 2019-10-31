@@ -33,7 +33,7 @@ if [[ $isRedHat == "true" ]]; then
 fi 
 
 if [[ $isUbuntu == "true" ]]; then
-        sed -ei 's/GRUB_DEFAULT=.*/GRUB_DEFAULT="1>2"/' /etc/default/grub
+        sed -i -e 's/GRUB_DEFAULT=.*/GRUB_DEFAULT="1>2"/' /etc/default/grub
         update-grub
 fi
 
