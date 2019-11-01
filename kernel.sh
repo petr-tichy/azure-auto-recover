@@ -8,7 +8,7 @@
 set_grub_default() {
     # if not set to saved, replace it
     sed -i "s/GRUB_DEFAULT=[[:digit:]]/GRUB_DEFAULT=saved/" /etc/default/grub
- #   GRUB_DISABLE_OS_PROBER=true
+    echo GRUB_DISABLE_OS_PROBER=true >> /etc/default/grub
 #GRUB_DEFAULT=saved
 #GRUB_SAVEDEFAULT=true
 }
