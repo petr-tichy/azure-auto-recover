@@ -154,7 +154,8 @@ has_valid_subscription () {
 
 stop_damaged_vm () {
     echo "Stopping and deallocating the Problematic Original VM"
-    az vm deallocate -g $g -n $vm 2>&1 > /dev/null
+    az vm deallocate -g $g -n $vm --no-wait 2>&1 > /dev/null
+    az vm wait -g $g -n $vm --custom "instanceView.statuses[?displayStatus=='VM deallocated']" --interval 5
     echo "VM is stopped" 
 }
 
@@ -190,7 +191,8 @@ create_rescue_vm () {
 
 
         echo "Creating the rescue VM $rn"
-        az vm create --use-unmanaged-disk --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku Standard_LRS 2>&1 >> recover.log 
+        az vm create --use-unmanaged-disk --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku Standard_LRS --no-wait 2>&1 >> recover.log 
+        az vm wait -g $g -n $vm --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "New VM is created"
 
         # We wait for all other functions to complete before we perform the attach
@@ -216,7 +218,8 @@ create_rescue_vm () {
 
 
         echo "Creating the rescue VM: $rn"
-        az vm create --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku Standard_LRS 2>&1 >> recover.log
+        az vm create --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku Standard_LRS --no-wait 2>&1 >> recover.log
+        az vm wait -g $g -n $vm --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "VM created. Attaching the OS-Disk to be recovered"
         az vm disk attach -g $g --vm-name $rn --disk  $target_disk_name 2>&1 >> recover.log
 
