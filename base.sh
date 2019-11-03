@@ -197,6 +197,11 @@ for k in $action_value; do
     fi
 done
 
+if [[ $isSuse == "true" ]]; then
+        #grub2-set-default "1>2"
+        grub2-mkconfig -o /boot/grub2/grub.cfg
+fi
+
 #Clean up everything
 cd /
 for i in dev/pts proc tmp sys dev; do umount /mnt/rescue-root/$i; done
