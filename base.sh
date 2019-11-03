@@ -12,6 +12,7 @@ export recover_action=""
 export boot_part=""
 export rescue_root=""
 export isExt4="false"
+export isExt3="false"
 
 export actions="fstab initrd kernel" # These are the basic actions at the moment
 
@@ -118,6 +119,10 @@ if [[ $(lsblk -fn $rescue_root | cut -d' ' -f2) == "ext4" ]]; then
     isExt4="true"
 fi
 
+if [[ $(lsblk -fn $rescue_root | cut -d' ' -f2) == "ext3" ]]; then
+    isExt3="true"
+fi
+
 #Mount the root part
 #====================
 mkdir /mnt/rescue-root
@@ -142,7 +147,7 @@ fi
 
 if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     # noouid is valid for XFS only
-    if [[ $isExt4 == "true" ]]; then
+    if [[ $isExt4 == "true" || $isExt3 == "true" ]]; then
         mount $boot_part /mnt/rescue-root/boot
     else
         mount -o nouuid $boot_part /mnt/rescue-root/boot
