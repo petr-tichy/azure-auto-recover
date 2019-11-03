@@ -167,7 +167,6 @@ done
 if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
     if [[ ! -d /mnt/rescue-root/run ]]; then
         mkdir /mnt/rescue-root/run
-        mkdir /mnt/rescue-root/run
     fi
     mount -o bind /run /mnt/rescue-root/run
 fi
@@ -202,7 +201,7 @@ if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
     umount /mnt/rescue-root/run
 fi
 
-if [[ ! $isUbuntu ]]; then
+if [[ $isUbuntu == "false" ]]; then
     umount /mnt/rescue-root/boot #may throw an erro on Ubuntu, but can be ignored
 fi
 
