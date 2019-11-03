@@ -5,7 +5,8 @@
 #
 
 recover_suse() {
-    mkinitrd /boot/initrd-$(ls /lib/modules | sort -V | tail -1) $(ls /lib/modules | sort -V | tail -1)
+    kernel_version=$(ls /lib/modules | sort -V | tail -1)
+    mkinitrd /boot/initrd-${kernel_version} $kernel_version
     grub2-mkconfig -o /boot/grub2/grub.cfg
 }
 
@@ -19,12 +20,17 @@ recover_ubuntu() {
 # Should handle all redhat based distros
 #
 recover_redhat() {
+    kernel_version=$(ls /lib/modules | sort -V | tail -1)
     if [[ $isRedHat6 == "true" ]]; then
+        # verify the grub.cfg and correct it if needed
         cd $tmp_dir
         wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-support-scripts/master/grub.awk
         awk -f grub.awk /boot/grub/grub.conf
+        # rebuild the initrd
+        dracut -f /boot/initramfs-${kernel_version}.img $kernel_version
     else
-        mkinitrd --force /boot/initramfs-$(ls /lib/modules | sort -V | tail -1).img $(ls /lib/modules | sort -V | tail -1)
+        depmod
+        mkinitrd --force /boot/initramfs-${kernel_version}.img $kernel_version
         grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
 
