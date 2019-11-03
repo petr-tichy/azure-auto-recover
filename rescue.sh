@@ -293,6 +293,8 @@ create_rescue_vm
 # Connect to the recovery VM. Load the file as defined in build_json_string() and execute the desired recovery option
 #
 echo "Start recovery operation/s"
+#read -p "Press Enter"
+#read -p "Press Enter"
 # eval is needed to get the expansion correct
 eval az vm extension set --resource-group $g --vm-name $rn --name customScript --publisher Microsoft.Azure.Extensions --protected-settings $(build_json_string $action)
 echo "Recovery finished"

@@ -8,6 +8,7 @@ recover_suse() {
     kernel_version=$(ls /lib/modules | sort -V | tail -1)
     mkinitrd /boot/initrd-${kernel_version} $kernel_version
     grub2-mkconfig -o /boot/grub2/grub.cfg
+    shim-install --config-file=/boot/grub2/grub.cfg
 }
 
 recover_ubuntu() {
