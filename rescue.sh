@@ -204,8 +204,8 @@ create_rescue_vm() {
         #az disk create --resource-group $resource_group --name $target_disk_name -l $location --sku Standard_LRS --source ${snapshotId//\"/} 2>&1 >>recover.log
 
         # Create copy of the original disk
-        echo "StoragAccount  " $storageAccountType
-        az disk create --os-type Linux --source $original_disk_name --location $location --name $target_disk_name --resource-group $resource_group --sku $storageAccountType
+        #echo "StoragAccount  " $storageAccountType
+        az disk create --os-type Linux --source $disk_uri --location $location --name $target_disk_name --resource-group $resource_group --sku $storageAccountType
         az disk wait --created --resource-group $resource_group --name $target_disk_name
 
         echo "Creating the rescue VM: $rn"
@@ -229,8 +229,6 @@ get_os_disk_uri() {
     else
         disk_uri=$(echo $datadisks | jq ".[].managedDisk.id" | sed s/\"//g)
         disk_name=$(az vm show -g $g -n $rn | jq ".storageProfile.dataDisks[0].name" | sed s/\"//g)
-        echo "disk_uri: $disk_uri"
-        echo "disk_name: $disk_name"
 
     fi
 }
@@ -252,7 +250,7 @@ detach_os_disk() {
 swap_os_disk() {
     echo "Preparing for OS disk swap"
     # Stop the Problematic VM
-    echo "Stopping and deallocating the problematic original VM"
+    #echo "Stopping and deallocating the problematic original VM"
     az vm deallocate -g $g -n $vm 2>&1 >>recover.log
 
     # Perform the disk swap and verify
@@ -271,7 +269,7 @@ swap_os_disk() {
 
 # Start the Fixed VM after disk swap
 start_fixedvm() {
-    echo "Successfully swapped the OS disk. Now starting the Problematic VM with OS disk $swap"
+    echo "Successfully swapped the OS disk. Now starting the Problematic VM with the recovered OS disk $swap"
     az vm start -g $g -n $vm
     echo "Start of the VM $vm Successful"
 }
@@ -296,10 +294,8 @@ create_rescue_vm
 # INFO RECOVERY OPTIONS ARE NOT FULLY IMPLEMENTED YET
 #
 echo "Start recovery operation/s"
-read -p "Press Enter to continue"
-read -p "Please press Enter again if you would like to end"
 # eval is needed to get the expansion correct
-#eval az vm extension set --resource-group $g --vm-name $rn --name customScript --publisher Microsoft.Azure.Extensions --protected-settings $(build_json_string $action)
+eval az vm extension set --resource-group $g --vm-name $rn --name customScript --publisher Microsoft.Azure.Extensions --protected-settings $(build_json_string $action)
 echo "Recovery finished"
 
 # Recovery finished and we are all set, ready to clean up
