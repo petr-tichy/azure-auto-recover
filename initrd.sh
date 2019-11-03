@@ -5,12 +5,12 @@
 #
 
 recover_suse() {
-    mkinitrd /boot/initrd-$(ls -t /lib/modules | head -1) $(ls -t /lib/modules | head -1)
+    mkinitrd /boot/initrd-$(ls /lib/modules | sort -V | tail -1) $(ls /lib/modules | sort -V | tail -1)
     grub2-mkconfig -o /boot/grub2/grub.cfg
 }
 
 recover_ubuntu() {
-    update-initramfs -k $(ls -t /lib/modules | head -1) -c
+    update-initramfs -k $(ls /lib/modules | sort -V | tail -1) -c
     update-grub
 
 }
@@ -24,7 +24,7 @@ recover_redhat() {
         wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-support-scripts/master/grub.awk
         awk -f grub.awk /boot/grub/grub.conf
     else
-        mkinitrd --force /boot/initramfs-$(ls -t /lib/modules | head -1).img $(ls -t /lib/modules | head -1)
+        mkinitrd --force /boot/initramfs-$(ls /lib/modules | sort -V | tail -1).img $(ls /lib/modules | sort -V | tail -1)
         grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
 
