@@ -22,7 +22,7 @@ recover_ubuntu() {
 recover_redhat() {
     kernel_version=$(ls /lib/modules | sort -V | tail -1)
     if [[ $isRedHat6 == "true" ]]; then
-        # verify the grub.cfg and correct it if needed
+        # verify the grub.conf and correct it if needed
         cd $tmp_dir
         wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-support-scripts/master/grub.awk
         awk -f grub.awk /boot/grub/grub.conf
