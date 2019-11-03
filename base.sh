@@ -93,9 +93,11 @@ if [[ $isSuse == "true" ]]; then
         boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxboot | cut -d ' ' -f2)
         rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxroot | cut -d ' ' -f2)
     else
-        boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | awk '/boot/ {print $1}')
-        partitions=$(ls /dev/disk/azure/scsi1/* | grep -E "part[0-9]$")
-        rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
+        #boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | awk '/boot/ {print $1}')
+        #partitions=$(ls /dev/disk/azure/scsi1/* | grep -E "part[0-9]$")
+        #rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
+        boot_part=/dev/disk/azure/scsi1/lun0-part$(lsblk -lf $(readlink -f /dev/disk/azure/scsi1/lun0) | grep -i boot | cut -b4)
+        rescue_root=/dev/disk/azure/scsi1/lun0-part$(lsblk -lf $(readlink -f /dev/disk/azure/scsi1/lun0) | grep -i root | cut -b4)
     fi
 fi
 
