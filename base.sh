@@ -154,6 +154,9 @@ if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     fi
 fi
 
+if [[ $isSuse == "true" ]]; then
+    mount /dev/sdc2 /mnt/rescue_root/boot/efi
+fi
 #Mount the support filesystems
 #==============================
 #see also http://linuxonazure.azurewebsites.net/linux-recovery-using-chroot-steps-to-recover-vms-that-are-not-accessible/
@@ -170,6 +173,7 @@ if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
     fi
     mount -o bind /run /mnt/rescue-root/run
 fi
+
 
 # Reformat the action value
 action_value=$(echo $1 | tr ',' ' ')
