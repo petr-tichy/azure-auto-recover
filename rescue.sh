@@ -291,7 +291,6 @@ create_rescue_vm
 
 #
 # Connect to the recovery VM. Load the file as defined in build_json_string() and execute the desired recovery option
-# INFO RECOVERY OPTIONS ARE NOT FULLY IMPLEMENTED YET
 #
 echo "Start recovery operation/s"
 # eval is needed to get the expansion correct
