@@ -154,8 +154,10 @@ if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
     fi
 fi
 
+# Mount the EFI part if Suse
 if [[ $isSuse == "true" ]]; then
-    mount /dev/sdc2 /mnt/rescue_root/boot/efi
+    efi_part=/dev/disk/azure/scsi1/lun0-part$(lsblk -lf $(readlink -f /dev/disk/azure/scsi1/lun0) | grep -i EFI | cut -b4)
+    mount $efi_part /mnt/rescue_root/boot/efi
 fi
 #Mount the support filesystems
 #==============================
@@ -207,7 +209,11 @@ cd /
 for i in dev/pts proc tmp sys dev; do umount /mnt/rescue-root/$i; done
 
 if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
+    #is this really needed for Suse?
     umount /mnt/rescue-root/run
+    if [[ -d /mnt/rescue_root/boot/efi ]]; then
+        umount /mnt/rescue_root/boot/efi
+    fi
 fi
 
 if [[ $isUbuntu == "false" ]]; then
