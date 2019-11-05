@@ -195,20 +195,15 @@ create_rescue_vm() {
         original_disk_name=${disk_uri##*/}
         original_disk_name=${original_disk_name%.*}
         target_disk_name=$original_disk_name-copy
+        hyperVgeneration=$(az disk show --ids $disk_uri --query hyperVgeneration)
+        hyperVgeneration=${hyperVgeneration//\"/}
 
-        #echo "Create a snapshot of the origine-os-disk: $original_disk_name"
-        #az snapshot create -g $resource_group -n $original_disk_name-snap --source $original_disk_name -l $location 2>&1 >>recover.log
-
-        #echo "Create a disk from the snapshot"
-        #snapshotId=$(az snapshot show --name $original_disk_name-snap --resource-group $resource_group | jq ".id")
-        #az disk create --resource-group $resource_group --name $target_disk_name -l $location --sku Standard_LRS --source ${snapshotId//\"/} 2>&1 >>recover.log
-
-        # Create copy of the original disk
+                # Create copy of the original disk
         #echo "StoragAccount  " $storageAccountType
-        az disk create --os-type Linux --source $disk_uri --location $location --name $target_disk_name --resource-group $resource_group --sku $storageAccountType
+        az disk create --os-type Linux --source $disk_uri --location $location --name $target_disk_name --resource-group $resource_group --sku $storageAccountType --hyper-v-generation $hyperVgeneration
         az disk wait --created --resource-group $resource_group --name $target_disk_name
-
         echo "Creating the rescue VM: $rn"
+        # Option hyperVgeneration is required as Suse VMs get created with type V2. If disk is created with V1 type this can result in a non-boot scenario again
         az vm create --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku $storageAccountType --no-wait 2>&1 >>recover.log
         az vm wait -g $g -n $rn --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "VM created. Attaching the OS-Disk to be recovered"
