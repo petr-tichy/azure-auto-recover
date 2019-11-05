@@ -4,9 +4,9 @@ This is not production ready!!
 **BETA!!**
 Still to be further tested!!
 
-The Azurer Linux Auto Recover (ALAR) tool is a set of bash scripts that allow you a Linux VM to be automatically recovered
+The Azurer Linux Auto Recover (ALAR) tool is a set of bash scripts that allow a Linux VM to be automatically recovered
 if the OS does not boot correct. 
-The most common scenarios which are covered by ALAR are at the moment:
+The most common scenarios which are covered by ALAR are at the moment are:
 
 * malformed /etc/fstab 
   * syntax error
@@ -36,8 +36,8 @@ This disk gets attached to the recovery VM then. With the help of the custom scr
 
 ### How can I recover my failed VM?
 The rescue script can be only executed in a Linux environment which has also azure cli installed.
-To do this please consult this documentation: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest
-Or simply use the cloud-shell: https://docs.microsoft.com/en-us/azure/cloud-shell/overvie
+To do this please consult this documentation: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+Or simply use the cloud-shell: https://docs.microsoft.com/en-us/azure/cloud-shell/overview
 
 Another prerequisite is the tool 'jq'.
 If it is missing it needs to be installed.
