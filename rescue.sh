@@ -190,9 +190,7 @@ create_rescue_vm() {
         az vm wait -g $g -n $rn --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "New VM is created"
 
-        # We wait for all other functions to complete before we perform the attach
-        wait
-        echo "Attach the OS-Disk copy to the rescue VM:$rn"
+        echo "Attach the OS-Disk copy to the rescue VM: $rn"
         az vm unmanaged-disk attach --vm-name $rn -g $g --name origin-os-disk --vhd-uri "https://$storage_account.blob.core.windows.net/vhds/$target_disk_name.vhd" 2>&1 >>recover.log
 
     else
