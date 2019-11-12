@@ -63,6 +63,7 @@ All the arguments are mandatory. However, arguments may be passed in any order\n
 4. -n or --name : Problematic Original VM\n
 5. -p or --password : Rescue VM's Password\n
 6. -s or --subscription : Subscription Id where the respective resources are present.\n\n
+7. --action : The action to be performed [fstab,kernel, initrd]
 
 Usage Example: ./rescue.sh --recue-vm-name rescue1 -g debian -n debian9 -s  xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -u rescue -p microsoftWelcome1!\n\n\n
 "
@@ -174,6 +175,14 @@ create_rescue_vm() {
         storage_account=${storage_account#*//}
 
         echo "creating a copy of the OS disk"
+        
+        #account_key=$(az storage account keys list --account-name $storage_account --query [0].value)
+        #account_key=${account_key//\"/}
+        #echo $account_key
+        #echo "storage-account: " $storage_account
+        #echo "disk-name: " $original_disk_name.vhd
+
+        az storage blob lease break -c vhds --account-name $storage_account -b $original_disk_name.vhd 2>&1 >>recover.log
         az storage blob copy start --destination-blob $target_disk_name.vhd --destination-container vhds --account-name $storage_account --source-uri $disk_uri 2>&1 >>recover.log
 
         echo "Creating the rescue VM $rn"
