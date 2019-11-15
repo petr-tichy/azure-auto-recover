@@ -6,7 +6,7 @@ Still to be further tested!!
 
 The Azurer Linux Auto Recover (ALAR) tool is a set of bash scripts that allow a Linux VM to be automatically recovered
 if the OS does not boot correct. 
-The most common scenarios which are covered by ALAR are at the moment are:
+The most common scenarios which are covered by ALAR at the moment are:
 
 * malformed /etc/fstab 
   * syntax error
@@ -30,7 +30,7 @@ This script corrects two issues that can happen when a new kernel gets installed
 So it either fixes the grub.cfg file and/or creates a new initrd image 
 
 ### Bird's-eye overview how it works
-In order to do the auto recovery a new VM is created which uses the same OS and VM type.
+In order to do the auto recovery a new VM is created which uses the same OS and VM type. 
 The failed VM gets stopped first and a copy of the OS disk is created.
 This disk gets attached to the recovery VM then. With the help of the custom script engine the auto recovery for each scenario is executed. After the recovery-scenario the OS-Disk copy is removed from the recovery VM. Next step is to swap the original OS-Disk with the copy disk and start the VM again. The tool makes havey use of the Azure CLI.
 
@@ -45,9 +45,14 @@ If it is missing it needs to be installed.
 - For RedHat/Centos: sudo yum install jq
 
 If all of the above is met download the script "rescue.sh" from the repository. 
-Make it executable: chmod 755 rescue.sh
 
-To recover a failed vm it can be invoked with the following options to get the initrd corrected
+`wget https://raw.githubusercontent.com/malachma/azure-auto-recover/master/rescue.sh`
+
+Make it executable: 
+
+`chmod 755 rescue.sh`
+
+To recover a failed vm it can be invoked with the following options
 
 
 All the options are mandatory
@@ -64,5 +69,10 @@ Example
 
 `./rescue.sh --rescue-vm-name suse-15-recover2 -u rescue -g sles15_rg -n suse15-test -p Welcome1Microsoft! -s c98141ca-e173-46dd-9395-xxxxxxxxxxxxx --action initrd`
 
-You can also do two or all of the three recoveries. To do this separate the arguments, for the --action option, with commas i.e.
+Also it is possible to use two or all of the three recovery actions. To do this separate the arguments, for the --action option, with commas i.e.
 `--action kernel,fstab`or `--action kernel,initrd,fstab`
+
+
+### Limitation
+* custom images are currently not supported 
+* encrypted images are not supported
