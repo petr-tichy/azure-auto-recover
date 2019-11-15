@@ -57,12 +57,16 @@ To recover a failed vm it can be invoked with the following options
 
 All the options are mandatory
 
-1. --rescue-vm-name : Name of the Rescue VM Name\n
-2. -u or --username : Rescue VM's Username\n
-3. -g or --resource-group : Problematic Original VM's Resource Group\n
-4. -n or --name : Problematic Original VM\n
-5. -p or --password : Rescue VM's Password\n
-6. -s or --subscription : Subscription Id where the respective resources are present.\n\n
+1. --rescue-vm-name : Name of the Rescue VM Name
+2. -u or --username : Rescue VM's Username
+3. -g or --resource-group : Problematic Original VM's Resource Group
+4. -n or --name : Problematic Original VM
+5. -p or --password : Rescue VM's Password
+6. -s or --subscription : Subscription Id where the respective resources are present.
+    
+    The subscription one can get with this command    
+    `az account list --query '[].[name, id]' --output table`
+
 7. --action : The action to be performed [fstab,kernel, initrd]
 
 Example
