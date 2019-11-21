@@ -13,9 +13,9 @@ DISTRO_NAME=${DISTRO_NAME//\"/}
 
 # At first verify we have the jq tool/package installed
 if [[ $DISTRO_NAME == "Ubuntu" || $DISTRO_NAME == "Debian GNU/Linux" ]]; then
-    dpkg-query -l jq 2>/dev/null | grep ii 2>&1 >/dev/null
+    dpkg-query -l jq 2>/dev/null | grep ii >/dev/null 2>&1
 else
-    rpmquery jq 2>&1 >/dev/null
+    rpmquery jq >/dev/null 2>&1
 fi
 
 if [[ $? -ne 0 ]]; then
@@ -29,9 +29,9 @@ fi
 # Second verify we have the azure cli package installed
 if [[ $DISTRO_NAME == "Ubuntu" || $DISTRO_NAME == "Debian GNU/Linux" ]]; then
     #dpkg-query -l azure-cli 2> /dev/null | grep ii 2>&1 > /dev/null
-    dpkg-query -l azure-cli 2>&1 >/dev/null
+    dpkg-query -l azure-cli >/dev/null 2>&1
 else
-    rpmquery azure-cli 2>&1 >/dev/null
+    rpmquery azure-cli >/dev/null 2>&1
 fi
 
 if [[ $? -ne 0 ]]; then
@@ -143,7 +143,7 @@ has_valid_subscription() {
 
 stop_damaged_vm() {
     echo "Stopping and deallocating the Problematic Original VM"
-    az vm deallocate -g $g -n $vm --no-wait 2>&1 >/dev/null
+    az vm deallocate -g $g -n $vm --no-wait >/dev/null 2>&1
     az vm wait -g $g -n $vm --custom "instanceView.statuses[?displayStatus=='VM deallocated']" --interval 5
     echo "VM is stopped"
 }
@@ -182,16 +182,16 @@ create_rescue_vm() {
         #echo "storage-account: " $storage_account
         #echo "disk-name: " $original_disk_name.vhd
 
-        az storage blob lease break -c vhds --account-name $storage_account -b $original_disk_name.vhd 2>&1 >>recover.log
-        az storage blob copy start --destination-blob $target_disk_name.vhd --destination-container vhds --account-name $storage_account --source-uri $disk_uri 2>&1 >>recover.log
+        az storage blob lease break -c vhds --account-name $storage_account -b $original_disk_name.vhd >>recover.log 2>&1
+        az storage blob copy start --destination-blob $target_disk_name.vhd --destination-container vhds --account-name $storage_account --source-uri $disk_uri >>recover.log 2>&1
 
         echo "Creating the rescue VM $rn"
-        az vm create --use-unmanaged-disk --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku Standard_LRS --no-wait 2>&1 >>recover.log
+        az vm create --use-unmanaged-disk --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku Standard_LRS --no-wait >>recover.log 2>&1
         az vm wait -g $g -n $rn --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "New VM is created"
 
         echo "Attach the OS-Disk copy to the rescue VM: $rn"
-        az vm unmanaged-disk attach --vm-name $rn -g $g --name origin-os-disk --vhd-uri "https://$storage_account.blob.core.windows.net/vhds/$target_disk_name.vhd" 2>&1 >>recover.log
+        az vm unmanaged-disk attach --vm-name $rn -g $g --name origin-os-disk --vhd-uri "https://$storage_account.blob.core.windows.net/vhds/$target_disk_name.vhd" >>recover.log 2>&1
 
     else
         disk_uri=$(echo $os_disk | jq ".managedDisk.id")
@@ -211,10 +211,10 @@ create_rescue_vm() {
         az disk wait --created --resource-group $resource_group --name $target_disk_name
         echo "Creating the rescue VM: $rn"
         # Option hyperVgeneration is required as Suse VMs get created with type V2. If disk is created with V1 type this can result in a non-boot scenario again
-        az vm create --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku $storageAccountType --no-wait 2>&1 >>recover.log
+        az vm create --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku $storageAccountType --no-wait >>recover.log 2>&1
         az vm wait -g $g -n $rn --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "VM created. Attaching the OS-Disk to be recovered"
-        az vm disk attach -g $g --vm-name $rn --name $target_disk_name 2>&1 >>recover.log
+        az vm disk attach -g $g --vm-name $rn --name $target_disk_name >>recover.log 2>&1
 
     fi
 }
@@ -242,9 +242,9 @@ detach_os_disk() {
     get_os_disk_uri
 
     if [[ $managed == "null" ]]; then
-        az vm unmanaged-disk detach -g $g --vm-name $rn -n $disk_name 2>&1 >>recover.log
+        az vm unmanaged-disk detach -g $g --vm-name $rn -n $disk_name >>recover.log 2>&1
     else
-        az vm disk detach -g $g --vm-name $rn -n $disk_name 2>&1 >>recover.log
+        az vm disk detach -g $g --vm-name $rn -n $disk_name >>recover.log 2>&1
     fi
 }
 
@@ -253,7 +253,7 @@ swap_os_disk() {
     echo "Preparing for OS disk swap"
     # Stop the Problematic VM
     #echo "Stopping and deallocating the problematic original VM"
-    az vm deallocate -g $g -n $vm 2>&1 >>recover.log
+    az vm deallocate -g $g -n $vm >>recover.log 2>&1
 
     # Perform the disk swap and verify
     echo "Performing the OS disk Swap"
@@ -262,10 +262,10 @@ swap_os_disk() {
         #
         # We do this for the unmanged VM via a break lease operation
         #
-        az storage blob lease break -c vhds --account-name $storage_account -b $original_disk_name.vhd 2>&1 >>recover.log
-        az storage blob copy start -c vhds -b $original_disk_name.vhd --source-container vhds --source-blob $target_disk_name.vhd --account-name $storage_account 2>&1 >>recover.log
+        az storage blob lease break -c vhds --account-name $storage_account -b $original_disk_name.vhd >>recover.log 2>&1
+        az storage blob copy start -c vhds -b $original_disk_name.vhd --source-container vhds --source-blob $target_disk_name.vhd --account-name $storage_account >>recover.log 2>&1
     else
-        az vm update -g $g -n $vm --os-disk $target_disk_name 2>&1 >>recover.log
+        az vm update -g $g -n $vm --os-disk $target_disk_name >>recover.log 2>&1
     fi
 }
 
