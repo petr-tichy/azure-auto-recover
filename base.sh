@@ -157,7 +157,7 @@ fi
 # Mount the EFI part if Suse
 if [[ $isSuse == "true" ]]; then
     efi_part=/dev/disk/azure/scsi1/lun0-part$(lsblk -lf $(readlink -f /dev/disk/azure/scsi1/lun0) | grep -i EFI | cut -b4)
-    mount $efi_part /mnt/rescue_root/boot/efi
+    mount $efi_part /mnt/rescue-root/boot/efi
 fi
 #Mount the support filesystems
 #==============================
