@@ -199,10 +199,11 @@ for k in $action_value; do
     fi
 done
 
-if [[ $isSuse == "true" ]]; then
-        #grub2-set-default "1>2"
-        grub2-mkconfig -o /boot/grub2/grub.cfg
-fi
+# why do we have this in this file???
+#if [[ $isSuse == "true" ]]; then
+#        #grub2-set-default "1>2"
+#        grub2-mkconfig -o /boot/grub2/grub.cfg
+#fi
 
 #Clean up everything
 cd /
@@ -211,8 +212,8 @@ for i in dev/pts proc tmp sys dev; do umount /mnt/rescue-root/$i; done
 if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
     #is this really needed for Suse?
     umount /mnt/rescue-root/run
-    if [[ -d /mnt/rescue_root/boot/efi ]]; then
-        umount /mnt/rescue_root/boot/efi
+    if [[ -d /mnt/rescue-root/boot/efi ]]; then
+        umount /mnt/rescue-root/boot/efi
     fi
 fi
 
