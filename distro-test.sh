@@ -27,6 +27,9 @@ export osNotSupported="true" # set to true by default, gets changed to false if 
 
 # FOR DEBUG ONLY END
 
+# Global redirection for ERR to STD
+exec 2>&1
+
 # Declare array
 a_part_info=()
 
@@ -60,14 +63,14 @@ fsck_partition() {
 
 	if [[ "$?" == 4 ]]; then
 		# error 4 is returned by fsck.ext4 only
-		logger -s "${root_rescue} is not able to be automatically recovered. Aborting ALAR"
+		echo  "${root_rescue} is not able to be automatically recovered. Aborting ALAR"
 		exit 1
 	fi
 
 	if [[ "${isXFS}" == "true" && "$?" == 1 ]]; then
 		# xfs_repair -n returns 1 if the fs is corrupted. 
 		# Also fsck may raise this error but we ignore it as even a normal recover is raising it. FALSE-NEGATIVE
-		logger -s "A general error occured while trying to recover the device ${root_rescue}. Aborting ALAR"
+		echo "A general error occured while trying to recover the device ${root_rescue}. Aborting ALAR"
 		exit 1
 	fi
 
@@ -187,7 +190,7 @@ done
 
 # Old Ubuntu?
 if [[ "${#a_part_info[@]}" -eq 1 ]]; then
-	echo "1"
+	echo "This could be an old Ubuntu image"
 	root_part_number=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f1)
 	root_part_fs=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f3)
 
@@ -197,7 +200,7 @@ fi
 
 # RedHat 6.x or 7.x?
 if [[ "${#a_part_info[@]}" -eq 2 ]]; then
-	echo "2"
+	echo "This could be a RedHat/Centos 6/7 image"
 	boot_part_number=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f1)
 	boot_part_fs=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f3)
 	root_part_number=$(for i in "${a_part_info[@]}"; do grep -v boot <<<"$i"; done | cut -d':' -f1)
@@ -225,11 +228,11 @@ fi
 
 # Recent Ubuntu?
 if [[ "${#a_part_info[@]}" -eq 3 ]]; then
-	echo "3"
+	echo "This could be a recent Ubuntu 16.x or 18.x image"
 
 	# Check whether we have a Freebsd image. They have three partitions as well but we do not support this OS
 	if [[ "${a_part_info[@]}" =~ "freebsd" ]]; then
-		logger -s "Freebsd is not a supported OS. ALAR tool is stopped"
+		echo "Freebsd is not a supported OS. ALAR tool is stopped"
 		osNotSupported="true"
 	else
 		boot_part_number=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f1)
@@ -251,7 +254,7 @@ fi
 
 #Suse 12 or 15?
 if [[ "${#a_part_info[@]}" -eq 4 ]]; then
-	echo "4"
+	echo "This could be a SUSE 12 or 15 image"
 	# Get boot partition
 	boot_part_number=$(for i in "${a_part_info[@]}"; do grep lxboot <<<"$i"; done | cut -d':' -f1)
 	efi_part_number=$(for i in "${a_part_info[@]}"; do grep UEFI <<<"$i"; done | cut -d':' -f1)
@@ -271,7 +274,7 @@ fi
 
 # No standard image
 if [[ "${#a_part_info[@]}" -gt 4 ]]; then
-	logger -s "Unrecognized Linux distribution. ALAR tool is stopped"
+	echo "Unrecognized Linux distribution. ALAR tool is stopped"
 	osNotSupported="true"
 fi
 
