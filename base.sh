@@ -25,28 +25,10 @@ export actions="fstab initrd kernel" # These are the basic actions at the moment
 
 recover_action() {
     cd "${tmp_dir}"
-    case "$1" in
-    fstab)
-        recover_action="$1"
-        ;;
-    kernel)
-        recover_action="$1"
-        ;;
-    initrd)
-        recover_action="$1"
-        ;;
-    esac
 
     # simple retry logic with a loop
-    while true; do
-        #wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/master/${recover_action}.sh"
-        wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/${recover_action}.sh"
-        if [[ $? -eq 0 ]]; then
-            echo "File ${recover_action}.sh was fetched"
-            break # the file got fetched, otherwise we try this again
-        fi
-    done
-
+    #wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/master/${recover_action}.sh"
+    wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/${recover_action}.sh"
 
     if [[ -f "${tmp_dir}/${recover_action}.sh" ]]; then
         echo "Starting recover action:  ${recover_action}"
@@ -73,14 +55,9 @@ isInAction() {
 # Start of the script
 #
 
-echo "Paramter passed over to base.sh: count=$# args=$@"
-
 # Create tmp dir in order to store our files we download
 tmp_dir="$(mktemp -d)"
 cd "${tmp_dir}"
-
-echo "TMP_DIR is: ${tmp_dir}"
-echo""
 
 # Filename for the distro verification
 distro_test="distro-test.sh"
@@ -92,7 +69,7 @@ exec 2>&1
 while true; do
     wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/"${distro_test}"
     if [[ $? -eq 0 ]]; then
-        echo "File ${distro-test} fetched"
+        echo "File ${distro_test} fetched"
         break # the file got fetched, otherwise we try this again
     fi
     sleep 1
@@ -101,13 +78,15 @@ done
 #
 # What OS we need to recover?
 #
-
-#  cp distro-test.sh ${tmp_dir}
-#    . /home/rescue/distro-test.sh
-
 if [[ -f "$tmp_dir/${distro_test}" ]]; then
     chmod 700 "${tmp_dir}/${distro_test}"
     . ${distro_test} # invoke the distro test
+
+    # Do we have identifed a supported distro?
+    if [[ ${osNotSupported} == "true" ]]; then
+        logger -s "OS is not supported. ALAR will stop!"
+        exit 1
+    fi
 else
     logger -s "File ${distro_test}.sh could not be fetched. Exiting"
     exit 1
@@ -119,7 +98,24 @@ if [[ ! -d /mnt/rescue-root ]]; then
     mkdir /mnt/rescue-root
 fi
 
-if [[ "${isRedHat}" == "true" || "${isSuse}" == "true" ]]; then
+if [[ ${isLVM} == "true" ]]; then
+    pvscan
+    vgscan
+    lvscan
+    rootlv=$(lvscan | grep rootlv | awk '{print $2}' | tr -d "'")
+    tmplv=$(lvscan | grep tmplv | awk '{print $2}' | tr -d "'")
+    optlv=$(lvscan | grep optlv | awk '{print $2}' | tr -d "'")
+    usrlv=$(lvscan | grep usrlv | awk '{print $2}' | tr -d "'")
+    varlv=$(lvscan | grep varlv | awk '{print $2}' | tr -d "'")
+
+    # ext4 i used together with LVM, so no further handling is required
+    mount ${rootlv} /mnt/rescue_root
+    mount ${tmplv} /mnt/rescue_root/tmp
+    mount ${optlv} /mnt/rescue_root/opt
+    mount ${usrlv} /mnt/rescue_root/usr
+    mount ${varlv} /mnt/rescue_root/var
+
+elif [[ "${isRedHat}" == "true" || "${isSuse}" == "true" ]]; then
     # noouid is valid for XFS only
     if [[ "${isExt4}" == "true" ]]; then
         mount -n "${rescue_root}" /mnt/rescue-root
@@ -138,12 +134,18 @@ if [[ ! -d /mnt/rescue-root/boot ]]; then
     mkdir /mnt/rescue-root/boot
 fi
 
-if [[ "$isRedHat" == "true" || "$isSuse" == "true" ]]; then
-    # noouid is valid for XFS only
-    if [[ "${isExt4}" == "true" || "${isExt3}" == "true" ]]; then
-        mount "${boot_part}" /mnt/rescue-root/boot
-    elif [[ "${isXFS}" == "true" ]]; then
-        mount -o nouuid "${boot_part}" /mnt/rescue-root/boot
+if [[ ${isLVM} == "true" ]]; then
+    boot_part_number=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f1)
+    boot_part=$(readlink -f /dev/disk/azure/scsi1/lun0-part"${boot_part_number}")
+    mount ${boot_part} /mnt/rescue_root/boot
+else
+    if [[ "$isRedHat" == "true" || "$isSuse" == "true" ]]; then
+        # noouid is valid for XFS only
+        if [[ "${isExt4}" == "true" || "${isExt3}" == "true" ]]; then
+            mount "${boot_part}" /mnt/rescue-root/boot
+        elif [[ "${isXFS}" == "true" ]]; then
+            mount -o nouuid "${boot_part}" /mnt/rescue-root/boot
+        fi
     fi
 fi
 
@@ -182,15 +184,15 @@ for k in $action_value; do
         case "${k,,}" in
         fstab)
             echo "We have fstab as option"
-            recover_status=recover_action "$k"
+            recover_status=$(recover_action "$k")
             ;;
         kernel)
             echo "We have kernel as option"
-            recover_status=recover_action "$k"
+            recover_status=$(recover_action "$k")
             ;;
         initrd)
             echo "We have initrd as option"
-            recover_status=recover_action "$k"
+            recover_status=$(recover_action "$k")
             ;;
         esac
     fi
@@ -208,15 +210,13 @@ if [[ "$isUbuntu" == "true" || "$isSuse" == "true" ]]; then
     fi
 fi
 
-if [[ "$isUbuntu" == "false" ]]; then
-    umount /mnt/rescue-root/boot #may throw an erro on Ubuntu, but can be ignored
-fi
+[[ $(mountpoint -q /mnt/rescue_root/boot) -eq 0 ]] && umount /mnt/rescue-root/boot && rm -d /mnt/rescue-root/boot
 
 umount /mnt/rescue-root
 rm -fr /mnt/rescue-root
-rm -fr "$tmp_dir/$FSTAB"
+rm -fr "${tmp_dir}"
 
-if [[ ${recover_status} -eq 11 ]]; then
+if [[ "${recover_status}" == "11" ]]; then
     logger -s "The recover action throwed an error"
     exit 1
 else
