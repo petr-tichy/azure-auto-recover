@@ -34,7 +34,7 @@ recover_action() {
         recover_action=$1
         ;;
     esac
-    wget -q --no-cache -O $recover_action https://raw.githubusercontent.com/malachma/azure-support-scripts/master/${recover_action}.sh
+    wget -q --no-cache -O $recover_action https://raw.githubusercontent.com/malachma/azure-auto-recover/master/${recover_action}.sh
     if [[ -f $tmp_dir/$recover_action ]]; then
         chmod 700 $tmp_dir/$recover_action
         chroot /mnt/rescue-root $tmp_dir/$recover_action
