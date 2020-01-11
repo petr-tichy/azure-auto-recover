@@ -53,11 +53,11 @@ fsck_partition() {
 	# $1 holds the type of the filesystem we need to check
 	# $2 holds the partiton info
 	if [[ "$1" == "xfs" ]]; then
-		xfs_repair -n "$2"
+		xfs_repair -n "$2" >>recover.log 2>&1
 	elif [[ "$1" == "fat16" ]]; then
-		fsck.vfat -p "$2"
+		fsck.vfat -p "$2" >>recover.log 2>&1
 	else
-		fsck."$1" -p "$2"
+		fsck."$1" -p "$2" >>recover.log 2>&1
 	fi
 
 	if [[ "$?" == 4 ]]; then
@@ -73,7 +73,7 @@ fsck_partition() {
 		exit 1
 	fi
 
-	echo "The error state/number is: $?"
+	echo "The error state/number is: $?" 
 }
 
 verifyRedHat() {
@@ -82,9 +82,9 @@ verifyRedHat() {
 	fi
 
 	if [[ "${isLVM}" == "true" ]]; then
-		pvscan
-		vgscan
-		lvscan
+		pvscan >>recover.log 2>&1
+		vgscan >>recover.log 2>&1
+		lvscan >>recover.log 2>&1
 		local fs=$(parted $(lvscan | grep rootlv | awk '{print $2}' | tr -d "'") print | grep -E '^ ?[0-9]{1,2} *' | awk '{print $5}')
 		# Set variable rescue_root to the right LV name
 		rescue_root=$(lvscan | grep rootlv | awk '{print $2}' | tr -d "'")
