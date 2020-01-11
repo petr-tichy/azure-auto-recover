@@ -91,7 +91,8 @@ verifyRedHat() {
 		fsck_partition "${fs}" "${rescue_root}"
 		mount $(lvscan | grep rootlv | awk '{print $2}' | tr -d "'") /tmp/assert
 	else
-		fsck_partition "${fs}" "${rescue_root}"
+		# The file system got globally defiend before
+		fsck_partition "${root_part_fs}" "${rescue_root}"
 		mount "${rescue_root}" /tmp/assert
 	fi
 
