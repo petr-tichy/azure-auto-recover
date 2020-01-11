@@ -47,5 +47,3 @@ fi
 if [[ "$isUbuntu" == "true" ]]; then
     recover_ubuntu
 fi
-
-exit 0

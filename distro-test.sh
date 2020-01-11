@@ -14,7 +14,6 @@ export isRedHat="false"
 export isRedHat6="false"
 export isSuse="false"
 export isUbuntu="false"
-export tmp_dir=""
 export recover_action=""
 export boot_part=""
 export rescue_root=""
@@ -39,13 +38,13 @@ a_part_info=()
 whatFs() {
 	case "${1}" in
 	ext4)
-		isExt4="yes"
+		isExt4="true"
 		;;
 	ext3)
-		isExt3="yes"
+		isExt3="true"
 		;;
 	xfs)
-		isXFS="yes"
+		isXFS="true"
 		;;
 	esac
 }
