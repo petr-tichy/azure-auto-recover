@@ -137,7 +137,7 @@ fi
 if [[ ${isLVM} == "true" ]]; then
     boot_part_number=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f1)
     boot_part=$(readlink -f /dev/disk/azure/scsi1/lun0-part"${boot_part_number}")
-    mount ${boot_part} /mnt/rescue_root/boot
+    mount ${boot_part} /mnt/rescue-root/boot
 else
     if [[ "$isRedHat" == "true" || "$isSuse" == "true" ]]; then
         # noouid is valid for XFS only
