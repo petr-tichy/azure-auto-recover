@@ -109,11 +109,11 @@ if [[ ${isLVM} == "true" ]]; then
     varlv=$(lvscan | grep varlv | awk '{print $2}' | tr -d "'")
 
     # ext4 i used together with LVM, so no further handling is required
-    mount ${rootlv} /mnt/rescue_root
-    mount ${tmplv} /mnt/rescue_root/tmp
-    mount ${optlv} /mnt/rescue_root/opt
-    mount ${usrlv} /mnt/rescue_root/usr
-    mount ${varlv} /mnt/rescue_root/var
+    mount ${rootlv} /mnt/rescue-root
+    mount ${tmplv} /mnt/rescue-root/tmp
+    mount ${optlv} /mnt/rescue-root/opt
+    mount ${usrlv} /mnt/rescue-root/usr
+    mount ${varlv} /mnt/rescue-root/var
 
 elif [[ "${isRedHat}" == "true" || "${isSuse}" == "true" ]]; then
     # noouid is valid for XFS only
