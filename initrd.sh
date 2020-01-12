@@ -20,9 +20,7 @@ recover_ubuntu() {
 # Should handle all redhat based distros
 #
 recover_redhat() {
-    export kernel_version="$(ls /lib/modules | sort -V | tail -1)"
-    echo $kernel_version
-    declare -xp
+    kernel_version="$(ls /lib/modules | sort -V | tail -1)"
     if [[ "$isRedHat6" == "true" ]]; then
         # verify the grub.conf and correct it if needed
         cd "$tmp_dir"
@@ -31,7 +29,7 @@ recover_redhat() {
         # rebuild the initrd
         dracut -f /boot/initramfs-"${kernel_version}".img "$kernel_version"
     else
-        depmod
+        depmod ${kernel_version}
         mkinitrd --force /boot/initramfs-"${kernel_version}".img "$kernel_version"
         grub2-mkconfig -o /boot/grub2/grub.cfg
     fi
