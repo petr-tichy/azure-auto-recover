@@ -20,7 +20,7 @@ recover_ubuntu() {
 # Should handle all redhat based distros
 #
 recover_redhat() {
-    kernel_version="$(ls /lib/modules | sort -V | tail -1)"
+    export kernel_version="$(ls /lib/modules | sort -V | tail -1)"
     echo $kernel_version
     declare -xp
     if [[ "$isRedHat6" == "true" ]]; then

@@ -160,7 +160,7 @@ fi
 #Mount the support filesystems
 #==============================
 #see also http://linuxonazure.azurewebsites.net/linux-recovery-using-chroot-steps-to-recover-vms-that-are-not-accessible/
-for i in dev proc sys tmp dev/pts; do
+for i in dev proc sys tmp dev/pts dev/log; do
     if [[ ! -d /mnt/rescue-root/"$i" ]]; then
         mkdir /mnt/rescue-root/"$i"
     fi
@@ -200,7 +200,7 @@ done
 
 #Clean up everything
 cd /
-for i in dev/pts proc tmp sys dev; do umount /mnt/rescue-root/"$i"; done
+for i in dev/pts dev/log proc tmp sys dev; do umount /mnt/rescue-root/"$i"; done
 
 if [[ "$isUbuntu" == "true" || "$isSuse" == "true" ]]; then
     #is this really needed for Suse?
@@ -208,6 +208,13 @@ if [[ "$isUbuntu" == "true" || "$isSuse" == "true" ]]; then
     if [[ -d /mnt/rescue-root/boot/efi ]]; then
         umount /mnt/rescue-root/boot/efi
     fi
+fi
+
+if [[ "${isLVM}" == "true" ]]; then
+    umount  /mnt/rescue-root/tmp
+    umount  /mnt/rescue-root/opt
+    umount  /mnt/rescue-root/usr
+    umount  /mnt/rescue-root/var
 fi
 
 [[ $(mountpoint -q /mnt/rescue_root/boot) -eq 0 ]] && umount /mnt/rescue-root/boot && rm -d /mnt/rescue-root/boot
