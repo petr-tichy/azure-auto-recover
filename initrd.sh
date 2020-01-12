@@ -23,7 +23,6 @@ recover_redhat() {
     kernel_version="$(ls /lib/modules | sort -V | tail -1)"
     echo $kernel_version
     declare -xp
-    exit
     if [[ "$isRedHat6" == "true" ]]; then
         # verify the grub.conf and correct it if needed
         cd "$tmp_dir"
