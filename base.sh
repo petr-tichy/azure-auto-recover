@@ -223,4 +223,3 @@ fi
 
 umount /mnt/rescue-root
 rm -fr /mnt/rescue-root
-rm -fr $tmp_dir/$FSTAB
