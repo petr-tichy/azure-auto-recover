@@ -175,7 +175,7 @@ create_rescue_vm() {
         storage_account=${storage_account#*//}
 
         echo "creating a copy of the OS disk"
-        
+
         #account_key=$(az storage account keys list --account-name $storage_account --query [0].value)
         #account_key=${account_key//\"/}
         #echo $account_key
@@ -203,9 +203,13 @@ create_rescue_vm() {
         original_disk_name=${original_disk_name%.*}
         target_disk_name=$original_disk_name-copy
         hyperVgeneration=$(az disk show --ids $disk_uri --query hyperVgeneration)
-        hyperVgeneration=${hyperVgeneration//\"/}
+        if [[ ${hyperVgeneration} == "" ]]; then
+            hyperVgeneration=V1
+        else
+            hyperVgeneration=${hyperVgeneration//\"/}
+        fi
 
-                # Create copy of the original disk
+        # Create copy of the original disk
         #echo "StoragAccount  " $storageAccountType
         az disk create --os-type Linux --source $disk_uri --location $location --name $target_disk_name --resource-group $resource_group --sku $storageAccountType --hyper-v-generation $hyperVgeneration
         az disk wait --created --resource-group $resource_group --name $target_disk_name
