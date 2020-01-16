@@ -160,7 +160,7 @@ fi
 #Mount the support filesystems
 #==============================
 #see also http://linuxonazure.azurewebsites.net/linux-recovery-using-chroot-steps-to-recover-vms-that-are-not-accessible/
-for i in dev proc sys tmp dev/pts dev/log; do
+for i in dev proc sys tmp dev/pts ; do
     if [[ ! -d /mnt/rescue-root/"$i" ]]; then
         mkdir /mnt/rescue-root/"$i"
     fi
@@ -176,7 +176,7 @@ fi
 
 # Reformat the action value
 #action_value=$(echo $1 | tr ',' ' ')
-action_value="fstab"
+action_value="fstab initrd"
 recover_status=""
 # What action has to be performed now?
 for k in $action_value; do
@@ -184,15 +184,18 @@ for k in $action_value; do
         case "${k,,}" in
         fstab)
             echo "We have fstab as option"
-            recover_status=$(recover_action "$k")
+            recover_action "$k"
+            recover_status=0
             ;;
         kernel)
             echo "We have kernel as option"
-            recover_status=$(recover_action "$k")
+            recover_action "$k"
+            recover_status=0
             ;;
         initrd)
             echo "We have initrd as option"
-            recover_status=$(recover_action "$k")
+            recover_action "$k"
+            recover_status=0
             ;;
         esac
     fi
@@ -200,7 +203,7 @@ done
 
 #Clean up everything
 cd /
-for i in dev/pts dev/log proc tmp sys dev; do umount /mnt/rescue-root/"$i"; done
+for i in dev/pts proc tmp sys dev; do umount /mnt/rescue-root/"$i"; done
 
 if [[ "$isUbuntu" == "true" || "$isSuse" == "true" ]]; then
     #is this really needed for Suse?
