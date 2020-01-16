@@ -203,7 +203,11 @@ create_rescue_vm() {
         original_disk_name=${original_disk_name%.*}
         target_disk_name=$original_disk_name-copy
         hyperVgeneration=$(az disk show --ids $disk_uri --query hyperVgeneration)
-        hyperVgeneration=${hyperVgeneration//\"/}
+        if [[ ${hyperVgeneration} == "" ]]; then
+            hyperVgeneration=V1
+        else
+            hyperVgeneration=${hyperVgeneration//\"/}
+        fi
 
         # Create copy of the original disk
         #echo "StoragAccount  " $storageAccountType
