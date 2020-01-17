@@ -8,24 +8,6 @@
 # Four partitions -> Suse
 # Two partitions with one of it a LVM flagged one -> RedHAt with LVM
 
-# FOR DEBUG ONLY
-# Variables
-export isRedHat="false"
-export isRedHat6="false"
-export isSuse="false"
-export isUbuntu="false"
-export recover_action=""
-export boot_part=""
-export rescue_root=""
-export isExt4="false"
-export isExt3="false"
-export isXFS="false"
-export isLVM="false"
-export efi_part=""
-export osNotSupported="true" # set to true by default, gets changed to false if this is the case
-
-# FOR DEBUG ONLY END
-
 # Global redirection for ERR to STD
 exec 2>&1
 
@@ -53,11 +35,11 @@ fsck_partition() {
 	# $1 holds the type of the filesystem we need to check
 	# $2 holds the partiton info
 	if [[ "$1" == "xfs" ]]; then
-		xfs_repair -n "$2" 
+		xfs_repair -n "$2" > /dev/null 2>&1 
 	elif [[ "$1" == "fat16" ]]; then
-		fsck.vfat -p "$2" 
+		fsck.vfat -p "$2" > /dev/null 2>&1
 	else
-		fsck."$1" -p "$2" 
+		fsck."$1" -p "$2" > /dev/null 2>&1
 	fi
 
 	if [[ "$?" == 4 ]]; then
@@ -82,9 +64,9 @@ verifyRedHat() {
 	fi
 
 	if [[ "${isLVM}" == "true" ]]; then
-		pvscan 
-		vgscan 
-		lvscan 
+		pvscan > /dev/null 2>&1 
+		vgscan > /dev/null 2>&1
+		lvscan > /dev/null 2>&1
 		local fs=$(parted $(lvscan | grep rootlv | awk '{print $2}' | tr -d "'") print | grep -E '^ ?[0-9]{1,2} *' | awk '{print $5}')
 		# Set variable rescue_root to the right LV name
 		rescue_root=$(lvscan | grep rootlv | awk '{print $2}' | tr -d "'")
@@ -278,4 +260,3 @@ if [[ "${#a_part_info[@]}" -gt 4 ]]; then
 	osNotSupported="true"
 fi
 
-declare -xp
