@@ -18,10 +18,32 @@ export efi_part=""
 export osNotSupported="true" # set to true by default, gets changed to false if this is the case
 export tmp_dir=""
 export global_error="false"
-
+STATUS_SUCCESS=0
+STATUS_ERROR=1
 export actions="fstab initrd kernel" # These are the basic actions at the moment
 
 # Functions START
+# Define some helper functions
+
+Log-Output() {
+    echo "[Output $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Info() {
+    echo "[Info $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Warning() {
+    echo "[Warning $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Error() {
+    echo "[Error $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Debug() {
+    echo "[Debug $(date "+%m/%d/%Y %T")]$1"
+}
 
 recover_action() {
     cd "${tmp_dir}"
@@ -31,12 +53,12 @@ recover_action() {
     wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/${recover_action}.sh"
 
     if [[ -f "${tmp_dir}/${recover_action}.sh" ]]; then
-        echo "Starting recover action:  ${recover_action}"
+        Log-Info "Starting recover action:  ${recover_action}"
         chmod 700 "${tmp_dir}/${recover_action}.sh"
         chroot /mnt/rescue-root "${tmp_dir}/${recover_action}.sh"
-        echo "Recover action:  ${recover_action} finished"
+        Log-Info "Recover action:  ${recover_action} finished"
     else
-        echo "File ${recover_action}.sh does not exist. Exiting ALAR"
+        Log-Error "File ${recover_action}.sh does not exist. Exiting ALAR"
         global_error="true"
     fi
 
@@ -69,7 +91,7 @@ exec 2>&1
 while true; do
     wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/"${distro_test}"
     if [[ $? -eq 0 ]]; then
-        echo "File ${distro_test} fetched"
+        Log-Info "File ${distro_test} fetched"
         break # the file got fetched, otherwise we try this again
     fi
     sleep 1
@@ -84,11 +106,11 @@ if [[ -f "$tmp_dir/${distro_test}" ]]; then
 
     # Do we have identifed a supported distro?
     if [[ ${osNotSupported} == "true" ]]; then
-        logger -s "OS is not supported. ALAR will stop!"
+        Log-Error "OS is not supported. ALAR will stop!"
         exit 1
     fi
 else
-    logger -s "File ${distro_test}.sh could not be fetched. Exiting"
+    Log-Error "File ${distro_test}.sh could not be fetched. Exiting"
     exit 1
 fi
 
@@ -160,7 +182,7 @@ fi
 #Mount the support filesystems
 #==============================
 #see also http://linuxonazure.azurewebsites.net/linux-recovery-using-chroot-steps-to-recover-vms-that-are-not-accessible/
-for i in dev proc sys tmp dev/pts ; do
+for i in dev proc sys tmp dev/pts; do
     if [[ ! -d /mnt/rescue-root/"$i" ]]; then
         mkdir /mnt/rescue-root/"$i"
     fi
@@ -183,17 +205,17 @@ for k in $action_value; do
     if [[ "$(isInAction $k)" -eq 0 ]]; then
         case "${k,,}" in
         fstab)
-            echo "We have fstab as option"
+            Log-Info "We have fstab as option"
             recover_action "$k"
             recover_status=0
             ;;
         kernel)
-            echo "We have kernel as option"
+            Log-Info "We have kernel as option"
             recover_action "$k"
             recover_status=0
             ;;
         initrd)
-            echo "We have initrd as option"
+            Log-Info "We have initrd as option"
             recover_action "$k"
             recover_status=0
             ;;
@@ -214,10 +236,10 @@ if [[ "$isUbuntu" == "true" || "$isSuse" == "true" ]]; then
 fi
 
 if [[ "${isLVM}" == "true" ]]; then
-    umount  /mnt/rescue-root/tmp
-    umount  /mnt/rescue-root/opt
-    umount  /mnt/rescue-root/usr
-    umount  /mnt/rescue-root/var
+    umount /mnt/rescue-root/tmp
+    umount /mnt/rescue-root/opt
+    umount /mnt/rescue-root/usr
+    umount /mnt/rescue-root/var
 fi
 
 [[ $(mountpoint -q /mnt/rescue_root/boot) -eq 0 ]] && umount /mnt/rescue-root/boot && rm -d /mnt/rescue-root/boot
@@ -227,8 +249,8 @@ rm -fr /mnt/rescue-root
 rm -fr "${tmp_dir}"
 
 if [[ "${recover_status}" == "11" ]]; then
-    logger -s "The recover action throwed an error"
-    exit 1
+    Log-Error "The recover action throwed an error"
+    exit $STATUS_ERROR
 else
-    exit 0
+    exit $STATUS_SUCCESS
 fi
