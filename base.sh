@@ -203,7 +203,7 @@ action_value=(echo $1 | tr ',' ' ')
 recover_status=""
 # What action has to be performed now?
 for k in $action_value; do
-    if [[ "$(isInAction $k)" -eq 0 ]]; then
+    if [[ $(isInAction $k) -eq 0 ]]; then
         case "${k,,}" in
         fstab)
             Log-Info "We have fstab as option"
