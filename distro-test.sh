@@ -192,6 +192,8 @@ if [[ "${#a_part_info[@]}" -eq 2 ]]; then
 	# Whereas RedHat 7.x does have the XFS filesystem
 	if [[ "$root_part_fs" == "ext4" ]]; then
 		isRedHat6="true"
+	else
+		isXFS="true"
 	fi
 
 	# Check whether we have a LVM system.
