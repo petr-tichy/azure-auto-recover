@@ -198,8 +198,8 @@ if [[ "${isUbuntu}" == "true" || "${isSuse}" == "true" ]]; then
 fi
 
 # Reformat the action value
-#action_value=$(echo $1 | tr ',' ' ')
-action_value="fstab initrd"
+#action_value=(echo $1 | tr ',' ' ')
+action_value="initrd"
 recover_status=""
 # What action has to be performed now?
 for k in $action_value; do
@@ -244,6 +244,7 @@ if [[ "${isLVM}" == "true" ]]; then
 fi
 
 [[ $(mountpoint -q /mnt/rescue_root/boot) -eq 0 ]] && umount /mnt/rescue-root/boot && rm -d /mnt/rescue-root/boot
+
 
 umount /mnt/rescue-root
 rm -fr /mnt/rescue-root
