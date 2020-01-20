@@ -198,8 +198,8 @@ if [[ "${isUbuntu}" == "true" || "${isSuse}" == "true" ]]; then
 fi
 
 # Reformat the action value
-#action_value=(echo $1 | tr ',' ' ')
-action_value="initrd"
+action_value=(echo $1 | tr ',' ' ')
+#action_value="initrd"
 recover_status=""
 # What action has to be performed now?
 for k in $action_value; do
