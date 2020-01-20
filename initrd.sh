@@ -5,13 +5,13 @@
 #
 
 recover_suse() {
-    kernel_version="$(ls /lib/modules | sort -V | tail -1)"
+    kernel_version="$(ls /lib/modules | sort -V | head -n 1)"
     mkinitrd /boot/initrd-"${kernel_version}" "$kernel_version"
     grub2-mkconfig -o /boot/grub2/grub.cfg
 }
 
 recover_ubuntu() {
-    update-initramfs -k "$(ls /lib/modules | sort -V | tail -1)" -c
+    update-initramfs -k "$(ls /lib/modules | sort -V | head -n 1)" -c
     update-grub
 
 }
@@ -20,7 +20,7 @@ recover_ubuntu() {
 # Should handle all redhat based distros
 #
 recover_redhat() {
-    kernel_version="$(ls /lib/modules | sort -V | tail -1)"
+    kernel_version="$(ls /lib/modules | sort -V | head -n 1)"
     if [[ "$isRedHat6" == "true" ]]; then
         # verify the grub.conf and correct it if needed
         cd "$tmp_dir"
