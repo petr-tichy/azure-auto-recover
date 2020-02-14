@@ -21,7 +21,7 @@ recover_ubuntu() {
 # Should handle all redhat based distros
 #
 recover_redhat() {
-    kernel_version=$(rpm -q kernel --last  | head -n 1 | cut -f1 -d' ')
+    kernel_version=$(sed -e "s/kernel-//;s/.x86_64//" <<< $(rpm -q kernel --last  | head -n 1 | cut -f1 -d' '))
     if [[ "$isRedHat6" == "true" ]]; then
         # verify the grub.conf and correct it if needed
         cd "$tmp_dir"
