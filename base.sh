@@ -50,8 +50,8 @@ recover_action() {
     local recover_action=$1
 
     # simple retry logic with a loop
-    #wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/master/${recover_action}.sh"
-    wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/${recover_action}.sh"
+    wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/master/${recover_action}.sh"
+    #wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/${recover_action}.sh"
 
     if [[ -f "${tmp_dir}/${recover_action}.sh" ]]; then
         Log-Info "Starting recover action:  ${recover_action}"
