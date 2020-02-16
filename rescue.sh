@@ -186,7 +186,7 @@ create_rescue_vm() {
         az storage blob copy start --destination-blob $target_disk_name.vhd --destination-container vhds --account-name $storage_account --source-uri $disk_uri >>recover.log 2>&1
 
         echo "Creating the rescue VM $rn"
-        az vm create --use-unmanaged-disk --name $rn -g $g --location $location --admin-username $user --admin-password $password --storage-sku Standard_LRS --image UbuntuLTS --size Standard_A1_v2 --no-wait >>recover.log 2>&1
+        az vm create --use-unmanaged-disk --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku Standard_LRS --no-wait >>recover.log 2>&1
         az vm wait -g $g -n $rn --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "New VM is created"
 
@@ -215,7 +215,7 @@ create_rescue_vm() {
         az disk wait --created --resource-group $resource_group --name $target_disk_name
         echo "Creating the rescue VM: $rn"
         # Option hyperVgeneration is required as Suse VMs get created with type V2. If disk is created with V1 type this can result in a non-boot scenario again
-        az vm create --name $rn -g $g --location $location --admin-username $user --admin-password $password --storage-sku $storageAccountType --image UbuntuLTS --size Standard_A1_v2 --no-wait >>recover.log 2>&1
+        az vm create --name $rn -g $g --location $location --admin-username $user --admin-password $password --image $urn --storage-sku $storageAccountType --size Standard_A1_v2 --no-wait >>recover.log 2>&1
         az vm wait -g $g -n $rn --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
         echo "VM created. Attaching the OS-Disk to be recovered"
         az vm disk attach -g $g --vm-name $rn --name $target_disk_name >>recover.log 2>&1
