@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Variables
-export amount_of_partition=0
-export UBUNTU_DISTRO="true"
+#export UBUNTU_DISTRO="true"
 export isRedHat="false"
 export isRedHat6="false"
 export isSuse="false"
@@ -13,13 +12,38 @@ export boot_part=""
 export rescue_root=""
 export isExt4="false"
 export isExt3="false"
-
+export isXFS="false"
+export isLVM="false"
+export efi_part=""
+export osNotSupported="true" # set to true by default, gets changed to false if this is the case
+export tmp_dir=""
+export global_error="false"
+STATUS_SUCCESS=0
+STATUS_ERROR=1
 export actions="fstab initrd kernel" # These are the basic actions at the moment
 
 # Functions START
+# Define some helper functions
 
-# Create tmp dir in order to store our files we download
-tmp_dir=$(mktemp -d)
+Log-Output() {
+    echo "[Output $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Info() {
+    echo "[Info $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Warning() {
+    echo "[Warning $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Error() {
+    echo "[Error $(date "+%m/%d/%Y %T")]$1"
+}
+
+Log-Debug() {
+    echo "[Debug $(date "+%m/%d/%Y %T")]$1"
+}
 
 recover_action() {
     cd "${tmp_dir}"
@@ -34,22 +58,23 @@ recover_action() {
         chroot /mnt/rescue-root "${tmp_dir}/${recover_action}.sh"
         Log-Info "Recover action:  ${recover_action} finished"
     else
-        logger -s "File ${recover_action}.sh could not be fetched. Exiting"
-        exit 1
+        Log-Error "File ${recover_action}.sh does not exist. Exiting ALAR"
+        global_error="true"
     fi
 
+    [[ ${global_error} == "true" ]] && return 11
 }
 
 isInAction() {
     #be quiet, just let us know this action exists
-    grep -q $1 <<<$actions
-    return $?
+    grep -q "$1" <<<"$actions"
+    return "$?"
 }
 
 # Funtions END
 
 #
-# What OS we need to recover?
+# Start of the script
 #
 
 # Create tmp dir in order to store our files we download
@@ -69,77 +94,60 @@ while true; do
         Log-Info "File ${distro_test} fetched"
         break # the file got fetched, otherwise we try this again
     fi
-fi
-
-case ${PRETTY_NAME} in
-*CentOS* | *Red\ Hat*)
-    echo "Ist CentOS"
-    isRedHat="true"
-    ;;
-*Ubuntu*)
-    echo "Ist Ubuntu"
-    isUbuntu="true"
-    ;;
-*SUSE*)
-    echo "Ist Suse"
-    isSuse="true"
-    ;;
-esac
+    sleep 1
+done
 
 #
-# Identify the corret boot and root partitions
+# What OS we need to recover?
 #
-if [[ $isSuse == "true" ]]; then
-    suse_version=$(grep VERSION_ID /etc/os-release)
-    suse_version=$(tr -d \" <<<${suse_version##*=})
-    if [[ $suse_version == "12.4" ]]; then
-        # This works well for SLES 12sp4 but not for SP3 THIS IS A BUG!!!! couldbe also a problem of the GPT which is not supported got managed OS disks
-        boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxboot | cut -d ' ' -f2)
-        rescue_root=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep p.lxroot | cut -d ' ' -f2)
-    else
-        #boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | awk '/boot/ {print $1}')
-        #partitions=$(ls /dev/disk/azure/scsi1/* | grep -E "part[0-9]$")
-        #rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
-        boot_part=/dev/disk/azure/scsi1/lun0-part$(lsblk -lf $(readlink -f /dev/disk/azure/scsi1/lun0) | grep -i boot | cut -b4)
-        rescue_root=/dev/disk/azure/scsi1/lun0-part$(lsblk -lf $(readlink -f /dev/disk/azure/scsi1/lun0) | grep -i root | cut -b4)
+if [[ -f "$tmp_dir/${distro_test}" ]]; then
+    chmod 700 "${tmp_dir}/${distro_test}"
+    . ${distro_test} # invoke the distro test
+
+    # Do we have identifed a supported distro?
+    if [[ ${osNotSupported} == "true" ]]; then
+        Log-Error "OS is not supported. ALAR will stop!"
+        exit 1
     fi
-fi
-
-if [[ $isRedHat == "true" ]]; then
-    # parted can not be used on RedHat 7.x there is a problemn that even a read opeartion causes the devices not ot exist anymore
-    #boot_part=/dev/disk/azure/scsi1/lun0-part$(parted $(readlink -f /dev/disk/azure/scsi1/lun0) print | grep boot | cut -d ' ' -f2)
-
-    boot_part=$(fdisk -l $(readlink -f /dev/disk/azure/scsi1/lun0) | awk '/^\/dev.*\*/ {print $1}')
-    partitions=$(ls $(readlink -f /dev/disk/azure/scsi1/*) | grep -e "[0-9]$")
-    rescue_root=$(echo $partitions | sed "s|$boot_part ||g")
-fi
-
-if [[ $isUbuntu == "true" ]]; then
-    rescue_root=$(fdisk -l $(readlink -f /dev/disk/azure/scsi1/lun0) | awk '/^\/dev\/sd.1 / {print $1}')
-fi
-
-if [[ $(lsblk -fn $rescue_root | cut -d' ' -f2) == "ext4" ]]; then
-    isExt4="true"
-fi
-
-if [[ $(lsblk -fn $rescue_root | cut -d' ' -f2) == "ext3" ]]; then
-    isExt3="true"
+else
+    Log-Error "File ${distro_test}.sh could not be fetched. Exiting"
+    exit 1
 fi
 
 #Mount the root part
 #====================
-mkdir /mnt/rescue-root
-if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
+if [[ ! -d /mnt/rescue-root ]]; then
+    mkdir /mnt/rescue-root
+fi
+
+if [[ ${isLVM} == "true" ]]; then
+    pvscan
+    vgscan
+    lvscan
+    rootlv=$(lvscan | grep rootlv | awk '{print $2}' | tr -d "'")
+    tmplv=$(lvscan | grep tmplv | awk '{print $2}' | tr -d "'")
+    optlv=$(lvscan | grep optlv | awk '{print $2}' | tr -d "'")
+    usrlv=$(lvscan | grep usrlv | awk '{print $2}' | tr -d "'")
+    varlv=$(lvscan | grep varlv | awk '{print $2}' | tr -d "'")
+
+    # ext4 i used together with LVM, so no further handling is required
+    mount ${rootlv} /mnt/rescue-root
+    mount ${tmplv} /mnt/rescue-root/tmp
+    mount ${optlv} /mnt/rescue-root/opt
+    mount ${usrlv} /mnt/rescue-root/usr
+    mount ${varlv} /mnt/rescue-root/var
+
+elif [[ "${isRedHat}" == "true" || "${isSuse}" == "true" ]]; then
     # noouid is valid for XFS only
-    if [[ $isExt4 == "true" ]]; then
-        mount -n $rescue_root /mnt/rescue-root
-    else
-        mount -n -o nouuid $rescue_root /mnt/rescue-root
+    if [[ "${isExt4}" == "true" ]]; then
+        mount -n "${rescue_root}" /mnt/rescue-root
+    elif [[ "${isXFS}" == "true" ]]; then
+        mount -n -o nouuid "${rescue_root}" /mnt/rescue-root
     fi
 fi
 
-if [[ $isUbuntu == "true" ]]; then
-    mount -n $rescue_root /mnt/rescue-root
+if [[ "$isUbuntu" == "true" ]]; then
+    mount -n "$rescue_root" /mnt/rescue-root
 fi
 
 #Mount the boot part
@@ -148,71 +156,77 @@ if [[ ! -d /mnt/rescue-root/boot ]]; then
     mkdir /mnt/rescue-root/boot
 fi
 
-if [[ $isRedHat == "true" || $isSuse == "true" ]]; then
-    # noouid is valid for XFS only
-    if [[ $isExt4 == "true" || $isExt3 == "true" ]]; then
-        mount $boot_part /mnt/rescue-root/boot
-    else
-        mount -o nouuid $boot_part /mnt/rescue-root/boot
+if [[ ${isLVM} == "true" ]]; then
+    boot_part_number=$(for i in "${a_part_info[@]}"; do grep boot <<<"$i"; done | cut -d':' -f1)
+    boot_part=$(readlink -f /dev/disk/azure/scsi1/lun0-part"${boot_part_number}")
+    mount ${boot_part} /mnt/rescue-root/boot
+else
+    if [[ "$isRedHat" == "true" || "$isSuse" == "true" ]]; then
+        # noouid is valid for XFS only
+        if [[ "${isExt4}" == "true" || "${isExt3}" == "true" ]]; then
+            mount "${boot_part}" /mnt/rescue-root/boot
+        elif [[ "${isXFS}" == "true" ]]; then
+            mount -o nouuid "${boot_part}" /mnt/rescue-root/boot
+        fi
     fi
 fi
 
 # Mount the EFI part if Suse
-if [[ $isSuse == "true" ]]; then
-    efi_part=/dev/disk/azure/scsi1/lun0-part$(lsblk -lf $(readlink -f /dev/disk/azure/scsi1/lun0) | grep -i EFI | cut -b4)
-    mount $efi_part /mnt/rescue-root/boot/efi
+if [[ "${isSuse}" == "true" ]]; then
+    if [[ ! -d /mnt/rescue-root/boot/efi ]]; then
+        mkdir /mnt/rescue-root/boot/efi
+    fi
+    mount "${efi_part}" /mnt/rescue-root/boot/efi
 fi
+
 #Mount the support filesystems
 #==============================
 #see also http://linuxonazure.azurewebsites.net/linux-recovery-using-chroot-steps-to-recover-vms-that-are-not-accessible/
 for i in dev proc sys tmp dev/pts; do
-    if [[ ! -d /mnt/rescue-root/$i ]]; then
-        mkdir /mnt/rescue-root/$i
+    if [[ ! -d /mnt/rescue-root/"$i" ]]; then
+        mkdir /mnt/rescue-root/"$i"
     fi
-    mount -o bind /$i /mnt/rescue-root/$i
+    mount -o bind /"$i" /mnt/rescue-root/"$i"
 done
 
-if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
+if [[ "${isUbuntu}" == "true" || "${isSuse}" == "true" ]]; then
     if [[ ! -d /mnt/rescue-root/run ]]; then
         mkdir /mnt/rescue-root/run
     fi
     mount -o bind /run /mnt/rescue-root/run
 fi
 
-
 # Reformat the action value
 action_value=$(echo $1 | tr ',' ' ')
+recover_status=""
 # What action has to be performed now?
 for k in $action_value; do
     if [[ $(isInAction $k) -eq 0 ]]; then
-        case ${k,,} in
+        case "${k,,}" in
         fstab)
-            echo "We have fstab as option"
-            recover_action $k
+            Log-Info "We have fstab as option"
+            recover_action "$k"
+            recover_status=0
             ;;
         kernel)
-            echo "We have kernel as option"
-            recover_action $k
+            Log-Info "We have kernel as option"
+            recover_action "$k"
+            recover_status=0
             ;;
         initrd)
-            echo "We have initrd as option"
-            recover_action $k
+            Log-Info "We have initrd as option"
+            recover_action "$k"
+            recover_status=0
             ;;
         esac
     fi
 done
 
-# why do we have this in this file???
-#if [[ $isSuse == "true" ]]; then
-#        #grub2-set-default "1>2"
-#        grub2-mkconfig -o /boot/grub2/grub.cfg
-#fi
-
 #Clean up everything
 cd /
-for i in dev/pts proc tmp sys dev; do umount /mnt/rescue-root/$i; done
+for i in dev/pts proc tmp sys dev; do umount /mnt/rescue-root/"$i"; done
 
-if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
+if [[ "$isUbuntu" == "true" || "$isSuse" == "true" ]]; then
     #is this really needed for Suse?
     umount /mnt/rescue-root/run
     if [[ -d /mnt/rescue-root/boot/efi ]]; then
@@ -220,9 +234,23 @@ if [[ $isUbuntu == "true" || $isSuse == "true" ]]; then
     fi
 fi
 
-if [[ $isUbuntu == "false" ]]; then
-    umount /mnt/rescue-root/boot #may throw an erro on Ubuntu, but can be ignored
+if [[ "${isLVM}" == "true" ]]; then
+    umount /mnt/rescue-root/tmp
+    umount /mnt/rescue-root/opt
+    umount /mnt/rescue-root/usr
+    umount /mnt/rescue-root/var
 fi
+
+[[ $(mountpoint -q /mnt/rescue_root/boot) -eq 0 ]] && umount /mnt/rescue-root/boot && rm -d /mnt/rescue-root/boot
+
 
 umount /mnt/rescue-root
 rm -fr /mnt/rescue-root
+rm -fr "${tmp_dir}"
+
+if [[ "${recover_status}" == "11" ]]; then
+    Log-Error "The recover action throwed an error"
+    exit $STATUS_ERROR
+else
+    exit $STATUS_SUCCESS
+fi
