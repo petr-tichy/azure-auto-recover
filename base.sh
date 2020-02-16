@@ -51,7 +51,6 @@ recover_action() {
 
     # simple retry logic with a loop
     wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/master/${recover_action}.sh"
-    #wget -q --no-cache "https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/${recover_action}.sh"
 
     if [[ -f "${tmp_dir}/${recover_action}.sh" ]]; then
         Log-Info "Starting recover action:  ${recover_action}"
@@ -90,7 +89,7 @@ exec 2>&1
 
 # simple retry logic with a loop
 while true; do
-    wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/"${distro_test}"
+    wget -q --no-cache https://raw.githubusercontent.com/malachma/azure-auto-recover/master/"${distro_test}"
     if [[ $? -eq 0 ]]; then
         Log-Info "File ${distro_test} fetched"
         break # the file got fetched, otherwise we try this again
