@@ -78,6 +78,8 @@ Also it is possible to use two or all of the three recovery actions. To do this 
 
 
 ### Limitation
+* custom images are currently not supported 
 * encrypted images are not supported
+* LVM based OS images are currently not suported
 * Classic VMs are not supported
 
