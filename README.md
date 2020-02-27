@@ -1,8 +1,5 @@
 # Azure Linux Auto Recover
 
-This is not production ready!!
-**BETA!!**
-Still to be further tested!!
 
 The Azurer Linux Auto Recover (ALAR) tool is a set of bash scripts that allow a Linux VM to be automatically recovered
 if the OS does not boot correct. 
