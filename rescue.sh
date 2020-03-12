@@ -276,7 +276,8 @@ swap_os_disk() {
 # Start the Fixed VM after disk swap
 start_fixedvm() {
     echo "Successfully swapped the OS disk. Now starting the Problematic VM with the recovered OS disk $swap"
-    az vm start -g $g -n $vm
+    az vm start -g $g -n $vm --no-wait
+    az vm wait -g $g -n $vm --custom "instanceView.statuses[?displayStatus=='VM running']" --interval 5
     echo "Start of the VM $vm Successful"
 }
 
