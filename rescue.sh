@@ -283,7 +283,7 @@ start_fixedvm() {
 
 build_json_string() {
     # option $1 contains the additional function we would like to execute
-    printf "'%s'" "{\"fileUris\": [\"https://raw.githubusercontent.com/malachma/azure-auto-recover/ubuntu-image/base.sh\"], \"commandToExecute\": \"./base.sh $1\"}"
+    printf "'%s'" "{\"fileUris\": [\"https://raw.githubusercontent.com/petr-tichy/azure-auto-recover/ubuntu-image/base.sh\"], \"commandToExecute\": \"./base.sh $1\"}"
 }
 
 # End of function definition

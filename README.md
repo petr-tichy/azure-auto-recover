@@ -43,7 +43,7 @@ If it is missing it needs to be installed.
 
 If all of the above is met download the script "rescue.sh" from the repository. 
 
-`wget https://raw.githubusercontent.com/malachma/azure-auto-recover/master/rescue.sh`
+`wget https://raw.githubusercontent.com/petr-tichy/azure-auto-recover/master/rescue.sh`
 
 Make it executable: 
 
