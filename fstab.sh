@@ -10,6 +10,8 @@ awk '/rootvg-optlv/ {print}' /etc/fstab.copy >>/etc/fstab
 awk '/rootvg-tmplv/ {print}' /etc/fstab.copy >>/etc/fstab
 awk '/rootvg-usrlv/ {print}' /etc/fstab.copy >>/etc/fstab
 awk '/rootvg-varlv/ {print}' /etc/fstab.copy >>/etc/fstab
+# FDB
+awk '\/var\/lib\/foundationdb\/data {print}' /etc/fstab.copy >>/etc/fstab
 cat /etc/fstab
 echo "Renaming original file /etc/fstab to /etc/fstab.copy"
 echo "Creating new /etc/fstab file with only /boot and / partitions."
